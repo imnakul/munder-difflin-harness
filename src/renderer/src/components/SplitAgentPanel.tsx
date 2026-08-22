@@ -22,6 +22,8 @@ import { Icon } from './Icon';
 
 export function SplitAgentPanel({ agent, onClose }: { agent: Agent; onClose: () => void }) {
   const updateAgent = useStore(s => s.updateAgent);
+  // [personal] 3D avatars render best in a bigger, centered box
+  const is3d = useStore(s => s.uiPortraits === 'svg');
   const onPtyStream = usePtyParser(agent.id);
 
 
@@ -45,10 +47,12 @@ export function SplitAgentPanel({ agent, onClose }: { agent: Agent; onClose: () 
         flexShrink: 0
       }}>
         <div style={{
-          width: 28, height: 28,
+          width: is3d ? 38 : 28, height: is3d ? 38 : 28,
           background: `var(--cth-${agent.accent}-light)`,
           boxShadow: 'inset 0 0 0 1px var(--cth-ink-300)',
-          display: 'flex', alignItems: 'flex-end', justifyContent: 'center', overflow: 'hidden',
+          display: 'flex',
+          alignItems: is3d ? 'center' : 'flex-end',
+          justifyContent: 'center', overflow: 'hidden',
           flexShrink: 0
         }}>
           <SpritePortrait character={agent.character} scale={1} />

@@ -34,6 +34,8 @@ export function AgentDetailPanel({ agent }: AgentDetailPanelProps) {
   const railNav = useStore(s => s.sidebarNav);
   // [personal] while the split panel shows this agent's pty, hand it over
   const isSplitHere = useStore(s => s.splits.some((sp) => sp.agentId === agent.id));
+  // [personal] 3D avatars render best in a bigger, centered box
+  const is3d = useStore(s => s.uiPortraits === 'svg');
   const isReal = !!agent.ptyId;
   // While this agent is shown in the fullscreen overlay, the fullscreen view
   // owns the pty (it sizes it to fill the screen). Keeping the embedded terminal
@@ -96,10 +98,12 @@ export function AgentDetailPanel({ agent }: AgentDetailPanelProps) {
         flexShrink: 0
       }}>
         <div style={{
-          width: 32, height: 32,
+          width: is3d ? 40 : 32, height: is3d ? 40 : 32,
           background: `var(--cth-${agent.accent}-light)`,
           boxShadow: 'inset 0 0 0 1px var(--cth-ink-300)',
-          display: 'flex', alignItems: 'flex-end', justifyContent: 'center', overflow: 'hidden',
+          display: 'flex',
+          alignItems: is3d ? 'center' : 'flex-end',
+          justifyContent: 'center', overflow: 'hidden',
           flexShrink: 0
         }}>
           <SpritePortrait character={agent.character} scale={1} />

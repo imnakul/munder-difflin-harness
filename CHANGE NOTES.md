@@ -291,9 +291,14 @@ toggle applies LIVE (no restart).
 - `SpritePortrait.tsx` [personal]: `svg` mode renders the picked `<img>`
   instead of painting the canvas busts.
 - **Drop your SVG collection into
-  `src/renderer/src/assets/avatars/`** (owner's pack: ~116 files), then
-  Settings → New Look → Portraits → `svg`. Adding/removing files reshuffles
+  `src/renderer/src/assets/avatars/`** (owner's pack: 3D-style avatars), then
+  Settings → New Look → Portraits → `3D`. Adding/removing files reshuffles
   picks (hash) — expected while curating.
+- **3D display rules** (why it looked cropped at first): pixel busts use
+  portrait-ratio tiles (36×46 etc.) with deliberate top-anchor + foot-crop;
+  3D avatars instead FILL their tile with `objectFit: contain` — never
+  cropped, never stretched — and the tiles are bigger + centered in 3D mode
+  (AgentCard 46×52/56, AgentDetailPanel 40×40, SplitAgentPanel 38×38).
 
 ### 4.8 `appName` — editable display name
 

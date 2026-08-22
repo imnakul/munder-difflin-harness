@@ -3,6 +3,7 @@ import { PixelPanel } from './PixelPanel';
 import { PixelBadge, StatusKind } from './PixelBadge';
 import { useHasTerminalDraft } from './terminalPool';
 import { SpritePortrait } from './SpritePortrait';
+import { useStore } from '@/store/store';
 import { RealtimeMichaelToggle } from './RealtimeMichaelToggle';
 import { CostHud } from '@/realtime/CostHud';
 import { AccentColorName } from '@/design/tokens';
@@ -57,6 +58,8 @@ export function AgentCard({
 }: AgentCardProps) {
   const [hover, setHover] = useState(false);
   const typing = useHasTerminalDraft(ptyId);
+  // [personal] 3D avatar display mode (see SpritePortrait)
+  const is3d = useStore(s => s.uiPortraits === 'svg');
   // IDENTITY and SELECTION are two different things, and conflating them is why
   // selecting Michael appeared to do nothing.
   //
@@ -170,7 +173,13 @@ export function AgentCard({
         <div style={{ display: 'flex', gap: 8, height: '100%' }}>
           {/* Portrait tile — vertically centred so the card reads calm and even. */}
           <div style={{
-            width: 36, height: isGod ? 50 : 46, alignSelf: 'center',
+            // [personal] 3D avatars get a bigger, centered tile — the pixel
+            // tile's portrait ratio + top-anchor + foot-crop rules are
+            // sprite-specific and mangle 3D avatars.
+            ...(is3d
+              ? { width: 46, height: isGod ? 56 : 52 }
+              : { width: 36, height: isGod ? 50 : 46 }),
+            alignSelf: 'center',
             // God's CARD is now accent-light, so the tile cannot be — it would
             // vanish into its own background. Paper reads as an inset frame
             // against the tint, which is what the tile is meant to look like.
@@ -178,7 +187,9 @@ export function AgentCard({
             boxShadow: `inset 0 0 0 1px var(--cth-ink-${isGod ? '300' : '100'})`,
             // Anchor the sprite's TOP: the 56px-tall portrait overflows this
             // tile, and bottom-anchoring cropped the head — crop feet, not face.
-            display: 'flex', alignItems: 'flex-start', justifyContent: 'center', overflow: 'hidden',
+            display: 'flex',
+            alignItems: is3d ? 'center' : 'flex-start',
+            justifyContent: 'center', overflow: 'hidden',
             flexShrink: 0
           }}>
             <SpritePortrait character={character} scale={2} />

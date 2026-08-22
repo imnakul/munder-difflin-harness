@@ -47,10 +47,12 @@ export function SpritePortrait({
   const w = Math.round(FRAME_W * scale);
   const h = Math.round(FRAME_H * scale);
 
-  // [personal] SVG portrait pack: when config.uiPortraits is 'svg' AND at
-  // least one SVG exists in assets/avatars, render a stable per-character
-  // pick from that pack instead of painting the pixel bust. Empty folder or
-  // 'pixel' mode = the upstream canvas, untouched.
+  // [personal] 3D avatar pack: when config.uiPortraits is 'svg' AND at least
+  // one SVG exists in assets/avatars, render a stable per-character pick from
+  // that pack instead of painting the pixel bust. The img FILLS its container
+  // tile with objectFit contain — 3D avatars are never cropped and never
+  // stretched, whatever their aspect (the pixel path's frame math and the
+  // tiles' sprite-crop overflow rules simply don't apply to them).
   const portraitMode = useStore((s) => s.uiPortraits);
   const svgUrl = portraitMode === 'svg' ? svgAvatarFor(character) : null;
   if (svgUrl) {
@@ -58,10 +60,11 @@ export function SpritePortrait({
       <img
         src={svgUrl}
         alt=""
+        draggable={false}
         style={{
-          width: w, height: h,
-          objectFit: 'cover',
-          imageRendering: 'auto'
+          width: '100%', height: '100%',
+          objectFit: 'contain',
+          display: 'block'
         }}
       />
     );

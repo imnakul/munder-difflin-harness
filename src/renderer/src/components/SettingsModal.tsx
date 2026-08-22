@@ -1332,8 +1332,9 @@ export function SettingsModal({ config, onClose, initialSection }: SettingsModal
                               Portraits
                             </span>
                             <span style={{ fontSize: 12, lineHeight: '16px', color: 'var(--cth-ink-500)' }}>
-                              Pixel keeps the drawn character busts; SVG uses the avatar pack dropped into
-                              src/renderer/src/assets/avatars/ (falls back to pixel if the folder is empty).
+                              Pixel keeps the drawn character busts; 3D uses the avatar pack dropped into
+                              src/renderer/src/assets/avatars/ — bigger, centered, never cropped (falls back
+                              to pixel if the folder is empty).
                             </span>
                           </div>
                           <div style={{ display: 'flex', gap: 6, flexShrink: 0 }}>
@@ -1349,7 +1350,7 @@ export function SettingsModal({ config, onClose, initialSection }: SettingsModal
                               size="sm"
                               onClick={() => void chooseUiPortraits('svg')}
                             >
-                              svg
+                              3D
                             </PixelButton>
                           </div>
                         </div>
