@@ -2038,6 +2038,19 @@ async function handleHireLink(link: string): Promise<void> {
   analytics.trackFeature('hire_install');
 }
 
+// ─── Dev data isolation ────────────────────────────────────────────────────
+// An installed copy and a dev build share the SAME app name, so without this
+// they'd also share %APPDATA%/munder-difflin — every dev run would read AND
+// mutate the installed app's harness.db/config. Dev builds therefore default
+// to a throwaway munder-difflin-dev dir. `npm run dev:main` (or
+// --md-main-data / MD_MAIN_DATA=1) opts back into the real dir to try changes
+// against live data; the installed app must be closed first either way (they
+// share the hive named pipe and would fight over the same lock).
+if (!app.isPackaged && !process.argv.includes('--md-main-data') && process.env.MD_MAIN_DATA !== '1') {
+  app.setPath('userData', join(app.getPath('appData'), 'munder-difflin-dev'));
+}
+console.log(`[data] userData = ${app.getPath('userData')} (${app.isPackaged ? 'installed' : 'dev'})`);
+
 // Register the protocol. In dev (electron .) Windows needs the explicit
 // exe+args form or the registration points at electron.exe with no entry.
 if (process.defaultApp) {
