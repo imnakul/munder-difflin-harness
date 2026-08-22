@@ -114,6 +114,22 @@ export interface HarnessConfig {
   circuitBreaker?: CircuitBreakerConfig;
   /** Enterprise Knowledge Graph (multimodal context for agents). Default OFF. */
   knowledgeGraph?: KnowledgeGraphConfig;
+  /** [personal] Master switch for the pixel office scene; mirrors main. */
+  officeScene?: boolean;
+  /** [personal] UI typeface ('pixel' | 'jakarta'); mirrors main. */
+  uiFont?: 'pixel' | 'jakarta';
+  /** [personal] UI chrome skin ('classic' | 'modern'); mirrors main. */
+  uiTheme?: 'classic' | 'modern';
+  /** [personal] Icon set ('pixel' | 'huge'); mirrors main. */
+  uiIcons?: 'pixel' | 'huge';
+  /** [personal] Left icon rail on/off; mirrors main. */
+  sidebarNav?: boolean;
+  /** [personal] Motion layer on/off; mirrors main. */
+  uiAnimations?: boolean;
+  /** [personal] Split Agent Mode on/off; mirrors main. */
+  splitAgentMode?: boolean;
+  /** [personal] Editable display name; mirrors main. */
+  appName?: string;
   /** TV-show office themes feature flag (Settings picker + switch flow). Default OFF. */
   tvShowOffices?: boolean;
   /** Active office map/cast theme (honored only when tvShowOffices is on). */

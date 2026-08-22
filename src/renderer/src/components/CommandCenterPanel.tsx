@@ -80,7 +80,24 @@ const TABS: { key: CCTab; label: string; icon: Parameters<typeof Icon>[0]['name'
  *  fullscreen" placeholder instead — two live xterms on one pty fight over its
  *  cols/rows and corrupt the display. */
 export function CommandCenterPanel({ agent, fullscreen = false }: { agent: Agent; fullscreen?: boolean }) {
-  const [tab, setTab] = useState<CCTab>('terminal');
+  const [tab, setTabRaw] = useState<CCTab>('terminal');
+  // [personal] Every tab switch also publishes to the store so the SideRail
+  // can highlight the current navigation item while this panel's own tab bar
+  // is hidden in rail mode.
+  const setTab = (key: CCTab): void => {
+    setTabRaw(key);
+    useStore.setState({ ccActiveTab: key });
+  };
+  // [personal] Publish the INITIAL tab too — setTab only fires on user clicks,
+  // so a fresh boot / refresh left the SideRail with no active item.
+  useEffect(() => { useStore.setState({ ccActiveTab: tab }); }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  // [personal] Rail mode hides this panel's tab bar + header buttons (the
+  // SideRail hosts them) — except in the fullscreen overlay, where the rail
+  // is not reachable.
+  const railNav = useStore((s) => s.sidebarNav);
+  // [personal] While the split panel shows THIS agent's pty, this panel hands
+  // the terminal over (one pty, one live xterm).
+  const splitAgentId = useStore((s) => s.splitView?.agentId ?? null);
   // The trigger-history ledger has nothing to say until an outside party can
   // reach us, so its tab appears only once an org key or a webhook exists. This
   // is the first config-gated tab in the panel: TABS stays the canonical order
@@ -132,13 +149,20 @@ export function CommandCenterPanel({ agent, fullscreen = false }: { agent: Agent
   useEffect(() => {
     let alive = true;
     window.cth.controlSnapshot(agent.id)
-      .then((s) => { if (alive && s) setFloorDeliveryPaused(s.autoDeliveryPaused); })
+      .then((s) => {
+        if (!alive || !s) return;
+        setFloorDeliveryPaused(s.autoDeliveryPaused);
+        // [personal] keep the SideRail's Auto button in sync
+        useStore.setState({ ccFloorDeliveryPaused: s.autoDeliveryPaused });
+      })
       .catch(() => { /* none */ });
     return () => { alive = false; };
   }, [agent.id]);
   const toggleFloorDelivery = async () => {
     const next = !floorDeliveryPaused;
     setFloorDeliveryPaused(next);
+    // [personal] keep the SideRail's Auto button in sync
+    useStore.setState({ ccFloorDeliveryPaused: next });
     const all = useStore.getState().agents;
     await Promise.all(all.map((a) => window.cth.controlAutoDelivery(a.id, next).catch(() => null)));
   };
@@ -181,7 +205,10 @@ export function CommandCenterPanel({ agent, fullscreen = false }: { agent: Agent
         </div>
         {/* v0.3.4: floor-wide auto-delivery lives HERE (one switch for every
             agent's queue), and the IDE opens from agent level, not the toolbar.
-            Short labels — the tooltips carry the full explanation. */}
+            Short labels — the tooltips carry the full explanation.
+            [personal] Hidden in rail mode (the SideRail hosts Auto + IDE);
+            still shown in the fullscreen overlay, where the rail is unreachable. */}
+        {(!railNav || fullscreen) && (
         <div style={{ display: 'flex', gap: 6, alignItems: 'center', flexShrink: 0 }}>
           <PixelButton
             variant={floorDeliveryPaused ? 'primary' : 'secondary'}
@@ -210,6 +237,7 @@ export function CommandCenterPanel({ agent, fullscreen = false }: { agent: Agent
             </span>
           </PixelButton>
         </div>
+        )}
       </div>
 
       {/* Tab bar — ONE row, tabs at their natural width, scrolling only if the
@@ -232,7 +260,11 @@ export function CommandCenterPanel({ agent, fullscreen = false }: { agent: Agent
           scroll out of view instead of wrapping to a visible second row. One row
           that sometimes needs a scroll beats two rows where one is nearly empty —
           and the grid's own reason for existing (keeping wrapped rows aligned)
-          stops applying the moment there is only ever one row. */}
+          stops applying the moment there is only ever one row.
+          [personal] Hidden in rail mode — the SideRail IS the tab bar (with
+          an active-item highlight driven by the ccActiveTab store mirror).
+          Still shown in the fullscreen overlay, where the rail is unreachable. */}
+      {(!railNav || fullscreen) && (
       <div className="cth-tabbar" style={{
         display: 'flex', gap: 4,
         // Docked in the sidebar the panel is narrow, so tabs WRAP: a second row
@@ -274,12 +306,16 @@ export function CommandCenterPanel({ agent, fullscreen = false }: { agent: Agent
           </button>
         ))}
       </div>
+      )}
 
       {/* Body */}
       <div style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
         {tab === 'terminal' && (
           isFullscreenedHere ? (
             <Centered>Terminal is open in fullscreen. Press Esc to bring it back.</Centered>
+          ) : !fullscreen && splitAgentId === agent.id ? (
+            // [personal] the split panel owns this pty right now
+            <Centered>Terminal is open in the split view. Close the split to bring it back.</Centered>
           ) : agent.ptyId ? (
             <>
               <div style={{ flex: 1, minHeight: 0, display: 'flex' }}>

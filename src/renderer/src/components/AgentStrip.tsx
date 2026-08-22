@@ -14,6 +14,9 @@ export interface AgentStripProps {
 
 export function AgentStrip({ config }: AgentStripProps) {
   const agents = useStore(s => s.agents);
+  // [personal] cards are draggable ONLY in Split Agent Mode (fork rule: with
+  // it off, the strip behaves exactly as upstream shipped it)
+  const splitOn = useStore(s => s.splitAgentMode);
   const restorableAgents = useStore(s => s.restorableAgents);
   const selectedId = useStore(s => s.selectedId);
   const select = useStore(s => s.select);
@@ -98,8 +101,14 @@ export function AgentStrip({ config }: AgentStripProps) {
         <div
           key={a.id}
           ref={(el) => { cardRefs.current[a.id] = el; }}
-          draggable
-          onDragStart={(e) => { setDragId(a.id); e.dataTransfer.effectAllowed = 'move'; }}
+          draggable={splitOn} // [personal] drag only exists for split mode
+          onDragStart={(e) => {
+            setDragId(a.id);
+            e.dataTransfer.effectAllowed = 'move';
+            // [personal] publish the drag so the main-area drop zone can offer
+            // a split while Split Agent Mode is on (cleared below on end/drop).
+            useStore.setState({ draggingAgentId: a.id });
+          }}
           onDragOver={(e) => {
             if (!dragId || dragId === a.id) return;
             e.preventDefault();
@@ -112,8 +121,15 @@ export function AgentStrip({ config }: AgentStripProps) {
             if (dragId && dragId !== a.id) reorderAgents(dragId, a.id);
             setDragId(null);
             setOverId(null);
+            // [personal] drag finished
+            useStore.setState({ draggingAgentId: null });
           }}
-          onDragEnd={() => { setDragId(null); setOverId(null); }}
+          onDragEnd={() => {
+            setDragId(null);
+            setOverId(null);
+            // [personal] drag finished
+            useStore.setState({ draggingAgentId: null });
+          }}
           style={{
             position: 'relative',
             flexShrink: 0,

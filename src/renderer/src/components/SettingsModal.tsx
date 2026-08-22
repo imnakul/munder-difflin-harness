@@ -1,4 +1,4 @@
-import { useState, useEffect, type CSSProperties } from 'react';
+import { useState, useEffect, useRef, type CSSProperties } from 'react';
 import { AGENT_MODELS, type HarnessConfig } from '@/store/config';
 import { useStore } from '@/store/store';
 import {
@@ -156,13 +156,22 @@ function clearLocalState(): void {
 // v0.3.4 redesign: six tabs, one topic each. 'AI Engines' folded into
 // Agents & Models; MCP + Slack + webhook + REST live together in Connections;
 // voice gets its own tab; Danger Zone became a red row at the bottom of General.
-export type Section = 'General' | 'Prerequisites' | 'Agents & Models' | 'Autonomy & Budgets' | 'Connections' | 'Voice' | 'Memory & Knowledge';
-const NAV_SECTIONS: Section[] = ['General', 'Prerequisites', 'Agents & Models', 'Autonomy & Budgets', 'Connections', 'Voice', 'Memory & Knowledge'];
+export type Section = 'General' | 'New Look' | 'Prerequisites' | 'Agents & Models' | 'Autonomy & Budgets' | 'Connections' | 'Voice' | 'Memory & Knowledge';
+const NAV_SECTIONS: Section[] = ['General', 'New Look', 'Prerequisites', 'Agents & Models', 'Autonomy & Budgets', 'Connections', 'Voice', 'Memory & Knowledge'];
 
 export function SettingsModal({ config, onClose, initialSection }: SettingsModalProps) {
   const [confirming, setConfirming] = useState(false);
   const [busy, setBusy] = useState(false);
-  const [activeSection, setActiveSection] = useState<Section>(initialSection ?? 'General');
+  const [activeSection, setActiveSectionRaw] = useState<Section>(initialSection ?? 'General');
+  // [personal] Directional tab transition: remember the index we came FROM so
+  // the entering section can slide in from the direction of travel (down the
+  // nav = from below). animations.css carries the keyframes; the key forces
+  // remount so the animation replays on every section change.
+  const tabDirRef = useRef<'down' | 'up'>('down');
+  const setActiveSection = (section: Section): void => {
+    tabDirRef.current = NAV_SECTIONS.indexOf(section) >= NAV_SECTIONS.indexOf(activeSection) ? 'down' : 'up';
+    setActiveSectionRaw(section);
+  };
 
   // Change-home flow: null until the user picks a new folder, then the sub-modal
   // confirms move-vs-fresh. Pre-selects 'move' (recommended - keeps the data).
@@ -384,6 +393,84 @@ export function SettingsModal({ config, onClose, initialSection }: SettingsModal
 
   // ─── Anonymous usage stats (default ON = opt-out; contract in TELEMETRY.md) ─
   const [telemetryOn, setTelemetryOn] = useState<boolean>(config.telemetryEnabled !== false);
+  // [personal] Pixel office scene master switch. Optimistic local state + a
+  // store mirror so App's mount gate reacts immediately (no reload needed).
+  const [officeSceneOn, setOfficeSceneOn] = useState<boolean>(useStore.getState().officeScene);
+  const toggleOfficeScene = async () => {
+    const next = !officeSceneOn;
+    setOfficeSceneOn(next);
+    try {
+      await window.cth.updateConfig({ officeScene: next } as Partial<HarnessConfig>);
+      useStore.getState().setOfficeScene(next);
+    } catch { setOfficeSceneOn(!next); }
+  };
+  // [personal] UI typeface: 'pixel' (upstream) vs Plus Jakarta Sans.
+  // Optimistic local state + a store mirror so App's <html>
+  // stamp (and the token swap in tokens.css) applies immediately.
+  const [uiFont, setUiFontLocal] = useState<'pixel' | 'jakarta'>(useStore.getState().uiFont);
+  const chooseUiFont = async (mode: 'pixel' | 'jakarta') => {
+    if (mode === uiFont) return;
+    const prev = uiFont;
+    setUiFontLocal(mode);
+    try {
+      await window.cth.updateConfig({ uiFont: mode } as Partial<HarnessConfig>);
+      useStore.getState().setUiFont(mode);
+    } catch { setUiFontLocal(prev); }
+  };
+  // [personal] UI chrome skin: 'classic' (retro pixel chrome) vs 'modern'
+  // (Apple/Raycast/Linear-style neutrals, soft shadows, rounded corners).
+  // Same optimistic-local-state + store-mirror pattern as the font picker.
+  const [uiTheme, setUiThemeLocal] = useState<'classic' | 'modern'>(useStore.getState().uiTheme);
+  const chooseUiTheme = async (mode: 'classic' | 'modern') => {
+    if (mode === uiTheme) return;
+    const prev = uiTheme;
+    setUiThemeLocal(mode);
+    try {
+      await window.cth.updateConfig({ uiTheme: mode } as Partial<HarnessConfig>);
+      useStore.getState().setUiTheme(mode);
+    } catch { setUiThemeLocal(prev); }
+  };
+  // [personal] Sidebar rail / motion layer / icon set — same toggle pattern.
+  const [sidebarNavOn, setSidebarNavLocal] = useState<boolean>(useStore.getState().sidebarNav);
+  const toggleSidebarNav = async () => {
+    const next = !sidebarNavOn;
+    setSidebarNavLocal(next);
+    try {
+      await window.cth.updateConfig({ sidebarNav: next } as Partial<HarnessConfig>);
+      useStore.getState().setSidebarNav(next);
+    } catch { setSidebarNavLocal(!next); }
+  };
+  const [animationsOn, setAnimationsLocal] = useState<boolean>(useStore.getState().uiAnimations);
+  const toggleAnimations = async () => {
+    const next = !animationsOn;
+    setAnimationsLocal(next);
+    try {
+      await window.cth.updateConfig({ uiAnimations: next } as Partial<HarnessConfig>);
+      useStore.getState().setUiAnimations(next);
+    } catch { setAnimationsLocal(!next); }
+  };
+  // [personal] Split Agent Mode — drag an agent card into the main area to
+  // open it side-by-side.
+  const [splitModeOn, setSplitModeLocal] = useState<boolean>(useStore.getState().splitAgentMode);
+  const toggleSplitMode = async () => {
+    const next = !splitModeOn;
+    setSplitModeLocal(next);
+    try {
+      await window.cth.updateConfig({ splitAgentMode: next } as Partial<HarnessConfig>);
+      useStore.getState().setSplitAgentMode(next);
+      if (!next) useStore.getState().setSplitView(null);
+    } catch { setSplitModeLocal(!next); }
+  };
+  const [uiIcons, setUiIconsLocal] = useState<'pixel' | 'huge'>(useStore.getState().uiIcons);
+  const chooseUiIcons = async (mode: 'pixel' | 'huge') => {
+    if (mode === uiIcons) return;
+    const prev = uiIcons;
+    setUiIconsLocal(mode);
+    try {
+      await window.cth.updateConfig({ uiIcons: mode } as Partial<HarnessConfig>);
+      useStore.getState().setUiIcons(mode);
+    } catch { setUiIconsLocal(prev); }
+  };
   const toggleTelemetry = async () => {
     const next = !telemetryOn;
     setTelemetryOn(next);
@@ -860,7 +947,10 @@ export function SettingsModal({ config, onClose, initialSection }: SettingsModal
                 {/* Right scrollable content pane. minWidth:0 lets this flex child
                     shrink to the row's width instead of growing to its content's
                     min-content (which would push a horizontal scrollbar). */}
-                <div style={{
+                <div
+                  key={activeSection}
+                  className={tabDirRef.current === 'up' ? 'cth-tab-in-up' : 'cth-tab-in-down'}
+                  style={{
                   flex: 1, minWidth: 0, overflowY: 'auto', overflowX: 'hidden',
                   padding: '20px 24px',
                   display: 'flex', flexDirection: 'column', gap: 20
@@ -1035,9 +1125,199 @@ export function SettingsModal({ config, onClose, initialSection }: SettingsModal
                           </PixelButton>
                         </div>
                       </div>
+                    </>
+                  )}
 
-                      {/* Office Theme — TV-show office maps (experimental; flag tvShowOffices, default off) */}
-                      <OfficeThemePicker config={config} />
+                  {/* ─── [personal] NEW LOOK — every fork toggle in one place ────
+                      Mirrors CHANGE NOTES.md §4: all of these are additive,
+                      toggle-gated, and OFF (or 'pixel'/'classic') = exact
+                      upstream behavior. */}
+                  {activeSection === 'New Look' && (
+                    <>
+                      <div>
+                        <div style={{
+                          fontFamily: 'var(--cth-font-display)', fontSize: 8, lineHeight: '12px',
+                          color: 'var(--cth-ink-500)', textTransform: 'uppercase', marginBottom: 6
+                        }}>
+                          Personal fork
+                        </div>
+                        <span style={{ fontSize: 12.5, lineHeight: '18px', color: 'var(--cth-ink-500)', display: 'block', marginBottom: 14 }}>
+                          Every toggle below belongs to this fork (see CHANGE NOTES.md). Defaults marked
+                          "upstream" restore the original app exactly.
+                        </span>
+                        {/* [personal] Pixel office scene — fork default off */}
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                            <span style={{ fontSize: 13, lineHeight: '20px', color: 'var(--cth-ink-900)' }}>
+                              Pixel office scene
+                            </span>
+                            <span style={{ fontSize: 12, lineHeight: '16px', color: 'var(--cth-ink-500)' }}>
+                              The animated pixel-art office floor. Off = the scene never loads (no
+                              canvas, no WebGL) and the floor area stays clear.
+                            </span>
+                          </div>
+                          <PixelButton
+                            variant={officeSceneOn ? 'primary' : 'secondary'}
+                            size="sm"
+                            onClick={toggleOfficeScene}
+                          >
+                            {officeSceneOn ? 'on' : 'off'}
+                          </PixelButton>
+                        </div>
+                        <div style={{ height: 10 }} />
+                        {/* [personal] UI typeface picker — pixel brand vs Plus Jakarta Sans */}
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                            <span style={{ fontSize: 13, lineHeight: '20px', color: 'var(--cth-ink-900)' }}>
+                              UI font
+                            </span>
+                            <span style={{ fontSize: 12, lineHeight: '16px', color: 'var(--cth-ink-500)' }}>
+                              The typeface for labels and body text. Pixel keeps the retro brand
+                              face; Jakarta is a clean modern sans. Terminals always stay mono.
+                            </span>
+                          </div>
+                          <div style={{ display: 'flex', gap: 6, flexShrink: 0 }}>
+                            <PixelButton
+                              variant={uiFont === 'pixel' ? 'primary' : 'secondary'}
+                              size="sm"
+                              onClick={() => void chooseUiFont('pixel')}
+                            >
+                              pixel
+                            </PixelButton>
+                            <PixelButton
+                              variant={uiFont === 'jakarta' ? 'primary' : 'secondary'}
+                              size="sm"
+                              onClick={() => void chooseUiFont('jakarta')}
+                            >
+                              jakarta
+                            </PixelButton>
+                          </div>
+                        </div>
+                        <div style={{ height: 10 }} />
+                        {/* [personal] UI chrome skin — retro pixel vs modern */}
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                            <span style={{ fontSize: 13, lineHeight: '20px', color: 'var(--cth-ink-900)' }}>
+                              UI style
+                            </span>
+                            <span style={{ fontSize: 12, lineHeight: '16px', color: 'var(--cth-ink-500)' }}>
+                              Classic keeps the retro square chrome with hard shadows; Modern switches to
+                              neutral surfaces, rounded corners, and soft shadows (Raycast/Linear-like).
+                              Pairs well with the Jakarta font.
+                            </span>
+                          </div>
+                          <div style={{ display: 'flex', gap: 6, flexShrink: 0 }}>
+                            <PixelButton
+                              variant={uiTheme === 'classic' ? 'primary' : 'secondary'}
+                              size="sm"
+                              onClick={() => void chooseUiTheme('classic')}
+                            >
+                              classic
+                            </PixelButton>
+                            <PixelButton
+                              variant={uiTheme === 'modern' ? 'primary' : 'secondary'}
+                              size="sm"
+                              onClick={() => void chooseUiTheme('modern')}
+                            >
+                              modern
+                            </PixelButton>
+                          </div>
+                        </div>
+                        <div style={{ height: 10 }} />
+                        {/* [personal] Sidebar rail */}
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                            <span style={{ fontSize: 13, lineHeight: '20px', color: 'var(--cth-ink-900)' }}>
+                              Sidebar
+                            </span>
+                            <span style={{ fontSize: 12, lineHeight: '16px', color: 'var(--cth-ink-500)' }}>
+                              Move the top-bar actions (theme, settings, fullscreen) into a slim icon
+                              rail on the left edge.
+                            </span>
+                          </div>
+                          <PixelButton
+                            variant={sidebarNavOn ? 'primary' : 'secondary'}
+                            size="sm"
+                            onClick={toggleSidebarNav}
+                          >
+                            {sidebarNavOn ? 'on' : 'off'}
+                          </PixelButton>
+                        </div>
+                        <div style={{ height: 10 }} />
+                        {/* [personal] Split Agent Mode */}
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                            <span style={{ fontSize: 13, lineHeight: '20px', color: 'var(--cth-ink-900)' }}>
+                              Split agent mode
+                            </span>
+                            <span style={{ fontSize: 12, lineHeight: '16px', color: 'var(--cth-ink-500)' }}>
+                              Drag an agent card from the bottom strip into the main area to open its
+                              terminal side-by-side with the main panel — drop on the left or right half
+                              to choose the side.
+                            </span>
+                          </div>
+                          <PixelButton
+                            variant={splitModeOn ? 'primary' : 'secondary'}
+                            size="sm"
+                            onClick={toggleSplitMode}
+                          >
+                            {splitModeOn ? 'on' : 'off'}
+                          </PixelButton>
+                        </div>
+                        <div style={{ height: 10 }} />
+                        {/* [personal] Motion layer */}
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                            <span style={{ fontSize: 13, lineHeight: '20px', color: 'var(--cth-ink-900)' }}>
+                              Animations
+                            </span>
+                            <span style={{ fontSize: 12, lineHeight: '16px', color: 'var(--cth-ink-500)' }}>
+                              Smooth transitions and micro-animations: hover fades, panel entrances,
+                              directional tab slides, and the sliding rail highlight.
+                            </span>
+                          </div>
+                          <PixelButton
+                            variant={animationsOn ? 'primary' : 'secondary'}
+                            size="sm"
+                            onClick={toggleAnimations}
+                          >
+                            {animationsOn ? 'on' : 'off'}
+                          </PixelButton>
+                        </div>
+                        <div style={{ height: 10 }} />
+                        {/* [personal] Icon set */}
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                            <span style={{ fontSize: 13, lineHeight: '20px', color: 'var(--cth-ink-900)' }}>
+                              Icons
+                            </span>
+                            <span style={{ fontSize: 12, lineHeight: '16px', color: 'var(--cth-ink-500)' }}>
+                              Pixel keeps the retro 16px glyph set; HugeIcons swaps in the modern
+                              stroke icon pack.
+                            </span>
+                          </div>
+                          <div style={{ display: 'flex', gap: 6, flexShrink: 0 }}>
+                            <PixelButton
+                              variant={uiIcons === 'pixel' ? 'primary' : 'secondary'}
+                              size="sm"
+                              onClick={() => void chooseUiIcons('pixel')}
+                            >
+                              pixel
+                            </PixelButton>
+                            <PixelButton
+                              variant={uiIcons === 'huge' ? 'primary' : 'secondary'}
+                              size="sm"
+                              onClick={() => void chooseUiIcons('huge')}
+                            >
+                              huge
+                            </PixelButton>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Office Theme — TV-show office maps (experimental; flag tvShowOffices, default off).
+                          [personal] hidden entirely while the office scene itself is off. */}
+                      {officeSceneOn && <OfficeThemePicker config={config} />}
                     </>
                   )}
 

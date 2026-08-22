@@ -24,6 +24,7 @@
 import { useEffect, useState } from 'react';
 import { PixelButton } from './PixelButton';
 import { Icon } from './Icon';
+import { useStore } from '@/store/store';
 import { DEFAULT_HERO, type HeroPayload } from '@shared/heroPayload';
 
 const GITHUB_REPO_URL = 'https://github.com/chaitanyagiri/munder-difflin';
@@ -33,6 +34,19 @@ export function SettingsHeroCard() {
   // Starts on the compiled-in defaults, so there is no empty frame or spinner
   // while the fetch is in flight — it just fills in if anything changed.
   const [hero, setHero] = useState<HeroPayload>(DEFAULT_HERO);
+
+  // [personal] Click-to-edit display name (config.appName; also feeds the
+  // SideRail wordmark). Inline editor: Enter saves, Esc cancels, blur saves.
+  const appName = useStore(s => s.appName);
+  const [editingName, setEditingName] = useState(false);
+  const [nameDraft, setNameDraft] = useState('');
+  const saveName = async () => {
+    setEditingName(false);
+    const next = nameDraft.trim();
+    if (!next || next === appName) return;
+    useStore.getState().setAppName(next);
+    try { await window.cth.updateConfig({ appName: next } as never); } catch { /* keep optimistic */ }
+  };
 
   useEffect(() => {
     let alive = true;
@@ -66,10 +80,37 @@ export function SettingsHeroCard() {
       <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12, flexWrap: 'wrap' }}>
         <div style={{ flex: 1, minWidth: 200 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
-            <span style={{
-              fontFamily: 'var(--cth-font-display)', fontSize: 13, lineHeight: '20px',
-              color: 'var(--cth-ink-900)'
-            }}>MUNDER DIFFLIN</span>
+            {/* [personal] editable display name — click to rename this install */}
+            {editingName ? (
+              <input
+                autoFocus
+                value={nameDraft}
+                onChange={(e) => setNameDraft(e.target.value.slice(0, 40))}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') void saveName();
+                  if (e.key === 'Escape') setEditingName(false);
+                }}
+                onBlur={() => void saveName()}
+                style={{
+                  fontFamily: 'var(--cth-font-display)', fontSize: 13, lineHeight: '20px',
+                  color: 'var(--cth-ink-900)',
+                  padding: '1px 6px', width: 220,
+                  background: 'var(--cth-paper-100)',
+                  boxShadow: 'inset 0 0 0 1px var(--cth-sky)',
+                  border: 'none', outline: 'none', borderRadius: 4
+                }}
+              />
+            ) : (
+              <span
+                title="Click to rename"
+                onClick={() => { setNameDraft(appName); setEditingName(true); }}
+                style={{
+                  fontFamily: 'var(--cth-font-display)', fontSize: 13, lineHeight: '20px',
+                  color: 'var(--cth-ink-900)', cursor: 'text',
+                  borderBottom: '1px dashed var(--cth-ink-300)'
+                }}
+              >{appName.toUpperCase()}</span>
+            )}
             {version && (
               <span style={{
                 fontFamily: 'var(--cth-font-mono, monospace)', fontSize: 12,

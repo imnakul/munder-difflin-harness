@@ -1,4 +1,8 @@
 @import './tokens.css';
+/* [personal] Modern skin (opt-in; inert unless data-uitheme='modern'). */
+@import './modern.css';
+/* [personal] Motion layer (opt-in; inert unless data-animations='on'). */
+@import './animations.css';
 
 *, *::before, *::after { box-sizing: border-box; }
 

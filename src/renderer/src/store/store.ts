@@ -234,6 +234,56 @@ interface State {
    *  window.cth.realtimeHasOpenAiKey(). */
   hasOpenAiKey: boolean;
   setHasOpenAiKey: (has: boolean) => void;
+  /** [personal] Mirror of config.officeScene — the pixel office scene master
+   *  switch. Set by App on config load + by Settings on toggle; App gates the
+   *  OfficeFloor mount on it, so flipping it mounts/unmounts the whole PixiJS
+   *  scene (and its WebGL context) without a reload. */
+  officeScene: boolean;
+  setOfficeScene: (on: boolean) => void;
+  /** [personal] Mirror of config.uiFont — App stamps it on <html> as
+   *  data-uifont and tokens.css swaps the typefaces. 'pixel' = upstream. */
+  uiFont: 'pixel' | 'jakarta';
+  setUiFont: (mode: 'pixel' | 'jakarta') => void;
+  /** [personal] Mirror of config.uiTheme — App stamps it on <html> as
+   *  data-uitheme; design/modern.css carries the modern skin. 'classic' =
+   * upstream chrome. */
+  uiTheme: 'classic' | 'modern';
+  setUiTheme: (mode: 'classic' | 'modern') => void;
+  /** [personal] Mirror of config.uiIcons — App stamps it on <html> as
+   *  data-uiicons; the Icon component reads it to pick the glyph set. */
+  uiIcons: 'pixel' | 'huge';
+  setUiIcons: (mode: 'pixel' | 'huge') => void;
+  /** [personal] Mirror of config.sidebarNav — gates the SideRail layout. */
+  sidebarNav: boolean;
+  setSidebarNav: (on: boolean) => void;
+  /** [personal] Mirror of config.uiAnimations — App stamps data-animations;
+   *  design/animations.css carries the motion layer. */
+  uiAnimations: boolean;
+  setUiAnimations: (on: boolean) => void;
+  /** [personal] Mirrors the Command Center's ACTIVE tab (published by
+   *  CommandCenterPanel on every switch) so the SideRail can highlight the
+   *  current navigation item while the CC's own tab bar is hidden. */
+  ccActiveTab: string | null;
+  /** [personal] Mirrors the floor-wide queue auto-delivery paused state
+   *  (owned by CommandCenterPanel) so the SideRail's Auto button renders the
+   *  true state. */
+  ccFloorDeliveryPaused: boolean;
+  /** [personal] Mirror of config.splitAgentMode — gates drag-to-split. */
+  splitAgentMode: boolean;
+  setSplitAgentMode: (on: boolean) => void;
+  /** [personal] Mirror of config.appName — editable display name (Settings
+   *  hero, rail wordmark). */
+  appName: string;
+  setAppName: (name: string) => void;
+  /** [personal] Split view: the agent shown side-by-side with the main panel
+   *  and which edge it occupies. Null = no split. Set by the main-area drop
+   *  zone (App.tsx) while Split Agent Mode is on. */
+  splitView: { agentId: string; side: 'left' | 'right' } | null;
+  setSplitView: (v: { agentId: string; side: 'left' | 'right' } | null) => void;
+  /** [personal] The agent card currently being dragged from the bottom strip
+   *  (published by AgentStrip's existing HTML5 drag; cleared on drop/end).
+   *  The main-area drop zone reads it to offer the split. */
+  draggingAgentId: string | null;
   /** Mirror of the active office theme (set by App on config load + by Settings
    *  on switch). OfficeFloor depends on this and rebuilds the scene on change. */
   officeTheme: ThemeId;
@@ -737,6 +787,27 @@ export const useStore = create<State>((set) => ({
   setHasGroqKey: (has) => set({ hasGroqKey: has }),
   hasOpenAiKey: false,
   setHasOpenAiKey: (has) => set({ hasOpenAiKey: has }),
+  officeScene: false,
+  setOfficeScene: (on) => set({ officeScene: on }),
+  uiFont: 'pixel',
+  setUiFont: (mode) => set({ uiFont: mode }),
+  uiTheme: 'classic',
+  setUiTheme: (mode) => set({ uiTheme: mode }),
+  uiIcons: 'pixel',
+  setUiIcons: (mode) => set({ uiIcons: mode }),
+  sidebarNav: true,
+  setSidebarNav: (on) => set({ sidebarNav: on }),
+  uiAnimations: true,
+  setUiAnimations: (on) => set({ uiAnimations: on }),
+  ccActiveTab: 'terminal',
+  ccFloorDeliveryPaused: false,
+  splitAgentMode: false,
+  setSplitAgentMode: (on) => set({ splitAgentMode: on }),
+  appName: 'Munder Difflin',
+  setAppName: (name) => set({ appName: name }),
+  splitView: null,
+  setSplitView: (v) => set({ splitView: v }),
+  draggingAgentId: null,
   officeTheme: 'office',
   setOfficeTheme: (theme) => set({ officeTheme: theme }),
   webhookTriggers: [],

@@ -2,6 +2,19 @@
 // Add to library by extending `paths` below.
 
 import { CSSProperties } from 'react';
+import { useStore } from '@/store/store';
+// [personal] HugeIcons free pack — the modern alternative glyph set, selected
+// via config.uiIcons ('huge'); App stamps data-uiicons on <html> and this
+// component reads it at render (App re-renders the tree on toggle, so the
+// attribute is always fresh when Icon re-runs).
+import { HugeiconsIcon } from '@hugeicons/react';
+import {
+  Settings02Icon, Add01Icon, Cancel01Icon, Tick02Icon, ArrowRight01Icon,
+  PauseIcon, PlayIcon, BellIcon, Folder01Icon, TerminalIcon, SourceCodeIcon,
+  Globe02Icon, FlowConnectionIcon, SparklesIcon, Maximize02Icon, Minimize02Icon,
+  Clock01Icon, AudioLinesIcon, NotebookIcon, InformationCircleIcon,
+  SidebarLeft01Icon, Image01Icon
+} from '@hugeicons/core-free-icons';
 
 export type IconName =
   | 'gear' | 'plus' | 'x' | 'check' | 'arrow-right' | 'pause' | 'play'
@@ -134,9 +147,57 @@ export interface IconProps {
   style?: CSSProperties;
 }
 
+/** [personal] The HugeIcons equivalents, keyed by the same IconName so the
+ *  pack swap is invisible to every call site. Stroke icons (1.8 weight) at the
+ *  same box size as the pixel set; color follows currentColor exactly like the
+ *  pixel ink path does. */
+const hugeIcons: Record<IconName, typeof Settings02Icon> = {
+  gear: Settings02Icon,
+  plus: Add01Icon,
+  x: Cancel01Icon,
+  check: Tick02Icon,
+  'arrow-right': ArrowRight01Icon,
+  pause: PauseIcon,
+  play: PlayIcon,
+  bell: BellIcon,
+  folder: Folder01Icon,
+  terminal: TerminalIcon,
+  code: SourceCodeIcon,
+  web: Globe02Icon,
+  mcp: FlowConnectionIcon,
+  sparkle: SparklesIcon,
+  expand: Maximize02Icon,
+  minimize: Minimize02Icon,
+  clock: Clock01Icon,
+  mic: AudioLinesIcon,
+  ledger: NotebookIcon,
+  info: InformationCircleIcon,
+  sidebar: SidebarLeft01Icon,
+  image: Image01Icon
+};
+
 export function Icon({ name, size = 1, style }: IconProps) {
   const def = paths[name];
   const dim = 16 * size;
+  // [personal] Pack switch — read from the STORE, not the data-uiicons
+  // attribute: the attribute is stamped by an App effect that runs AFTER the
+  // render pass, so reading it during render served every pack switch one
+  // toggle late (which read as "the toggle is inverted"). The store is the
+  // synchronous source of truth and re-renders this component on change.
+  const pack = useStore((s) => s.uiIcons) === 'huge'
+    || (typeof document !== 'undefined' && document.documentElement.dataset.uiicons === 'huge')
+    ? 'huge' : 'pixel';
+  if (pack === 'huge') {
+    return (
+      <HugeiconsIcon
+        icon={hugeIcons[name]}
+        size={dim}
+        color="currentColor"
+        strokeWidth={1.8}
+        style={{ display: 'inline-block', ...style }}
+      />
+    );
+  }
   return (
     <svg
       viewBox="0 0 16 16"

@@ -55,7 +55,8 @@ export function PixelPanel({
   }
 
   return (
-    <div className={className} style={baseStyle}>
+    // [personal] stable class hook for the modern skin's radius rules (modern.css)
+    <div className={className ? `cth-panel ${className}` : 'cth-panel'} style={baseStyle}>
       {title && (
         <div
           style={{

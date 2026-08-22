@@ -1,0 +1,77 @@
+/* [personal] Modern skin — an Apple/Raycast/Linear-flavored alternative to
+   the retro pixel chrome. Opt-in via config.uiTheme='modern', stamped by App
+   as data-uitheme='modern' on <html> (same mechanism as data-cth-theme).
+
+   WHY THIS WORKS AS ONE FILE: the app's components apply their chrome inline
+   (241 box-shadow strings across the renderer), but the VALUES are --cth-*
+   tokens — so swapping tokens restyles every surface without touching a
+   component. The exceptions are corner radii (components leave them unset,
+   i.e. square) and a handful of literal hard shadows; those are handled by
+   the class rules at the bottom, which hook the .cth-panel/.cth-btn/
+   .cth-badge classes added to the three shared primitives. !important is
+   required there to beat inline styles, and is scoped to this mode only.
+
+   Pairs naturally with uiFont='jakarta'. Dark mode: pass 1 is light-tuned —
+   the dark palette applies on top where it defines tokens this file doesn't. */
+:root[data-uitheme='modern'] {
+  /* Surfaces — cool neutrals instead of warm cream/violet */
+  --cth-cream-50:  #F6F7F9;   /* app ground */
+  --cth-cream-100: #FFFFFF;   /* panels */
+  --cth-cream-200: #F2F3F5;   /* inset fills / hovers */
+  --cth-cream-300: #E7E9ED;   /* disabled fills */
+  --cth-paper-100: #FFFFFF;   /* cards, inputs, terminals */
+  --cth-paper-200: #FAFAFB;
+
+  /* Text — near-black instead of violet-ink */
+  --cth-ink-900: #181A21;
+  --cth-ink-700: #3D414D;
+  --cth-ink-500: #6F747E;
+  --cth-ink-300: #C7CBD3;     /* hairline borders */
+  --cth-ink-100: #E5E7EB;     /* dividers */
+
+  /* Hard drop shadow → soft layered elevation */
+  --cth-shadow-hard: 0 1px 2px rgba(24, 26, 33, 0.05), 0 8px 24px -8px rgba(24, 26, 33, 0.12);
+
+  /* Spacing — one step airier than the pixel scale. The classic scale was
+     tuned for dense 8px-grid chrome; modern panels read better with a touch
+     more room (12→14 panel padding, 16→20 section padding). */
+  --cth-space-3: 14px;
+  --cth-space-4: 20px;
+
+  /* Panel borders → hairline + soft lift (dialogs get the most) */
+  --cth-panel-border:          inset 0 0 0 1px #E6E8EC, 0 1px 2px rgba(24, 26, 33, 0.04), 0 4px 12px -4px rgba(24, 26, 33, 0.06);
+  --cth-panel-border-inset:    inset 0 0 0 1px #ECEDEF;
+  --cth-panel-border-terminal: inset 0 0 0 1px #E6E8EC;
+  --cth-panel-border-dialog:   inset 0 0 0 1px #D8DBE1, 0 2px 6px rgba(24, 26, 33, 0.06), 0 16px 40px -12px rgba(24, 26, 33, 0.18);
+}
+
+/* Radii — the one thing tokens can't carry (inline styles or defaults win
+   otherwise). Modern apps round nearly everything; pills stay pills. */
+:root[data-uitheme='modern'] .cth-panel { border-radius: 10px !important; }
+:root[data-uitheme='modern'] .cth-btn   { border-radius: 8px  !important; }
+:root[data-uitheme='modern'] .cth-badge { border-radius: 999px !important; }
+:root[data-uitheme='modern'] input,
+:root[data-uitheme='modern'] select,
+:root[data-uitheme='modern'] textarea { border-radius: 8px !important; }
+:root[data-uitheme='modern'] button   { border-radius: 8px !important; }
+
+/* Type weight & tracking — the consistency pass. Normal 400-weight sans next
+   to what the pixel chrome implied reads thin and uneven; modern UIs hold
+   500-600 across controls. Letter-spacing on the (uppercase) display labels
+   compensates for the tracking the pixel face carried in its glyphs. */
+:root[data-uitheme='modern'] body,
+:root[data-uitheme='modern'] button,
+:root[data-uitheme='modern'] input,
+:root[data-uitheme='modern'] select,
+:root[data-uitheme='modern'] textarea {
+  font-weight: 500;
+  letter-spacing: 0.01em;
+}
+:root[data-uitheme='modern'] button { font-weight: 600; }
+
+/* Button sizing rhythm — uniform comfortable padding regardless of where a
+   hand-rolled button sits (the PixelButton sizes keep their heights; this
+   lifts the many ad-hoc inline `padding: 2px 6px` controls to one rhythm). */
+:root[data-uitheme='modern'] .cth-btn { padding: 0 14px !important; }
+:root[data-uitheme='modern'] .cth-btn[style*="height: 24"],
+:root[data-uitheme='modern'] .cth-btn[style*="height:24"] { padding: 0 10px !important; }

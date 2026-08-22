@@ -169,3 +169,22 @@
   /* Hard shadow reads as depth, not void */
   --cth-shadow-hard: 4px 4px 0 rgba(0, 0, 0, 0.45);
 }
+
+/* ── [personal] UI font mode — Plus Jakarta Sans ─────────────────────────────
+   Stamped by App as data-uifont='jakarta' on <html> (mirrors the theme
+   mechanism above). Swaps the pixel BRAND face (Press Start 2P) and the body
+   face (Inter) for Plus Jakarta Sans everywhere except the mono/terminal face,
+   which must stay monospace. The display type scale steps UP because Press
+   Start 2P is ~2x the visual size of a normal face per px — the pixel sizes
+   (8/12/16) would render Jakarta microscopically. */
+:root[data-uifont='jakarta'] {
+  --cth-font-display: "Plus Jakarta Sans", "Inter", -apple-system, "Segoe UI", system-ui, sans-serif;
+  --cth-font-ui:      "Plus Jakarta Sans", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+
+  --cth-text-display-lg: 20px;
+  --cth-text-display-md: 15px;
+  --cth-text-display-sm: 11px;
+  --cth-lh-display-lg: 26px;
+  --cth-lh-display-md: 22px;
+  --cth-lh-display-sm: 15px;
+}

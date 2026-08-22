@@ -52,6 +52,7 @@ export function PixelBadge({ status, label, style }: PixelBadgeProps) {
   const text = label ?? labelByStatus[status] ?? status;
   return (
     <span
+      className="cth-badge" /* [personal] class hook for the modern skin (modern.css) */
       style={{
         display: 'inline-flex',
         alignItems: 'center',

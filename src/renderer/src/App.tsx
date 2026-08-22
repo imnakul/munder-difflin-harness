@@ -4,6 +4,8 @@ import { startMockLoop, stopMockLoop } from '@/store/mockEvents';
 import type { HarnessConfig } from '@/store/config';
 import { DEFAULT_ORG_TRIGGER } from '@shared/triggers';
 import { OfficeFloor } from '@/scene/office/OfficeFloor';
+import { SideRail } from '@/components/SideRail'; // [personal]
+import { SplitAgentPanel } from '@/components/SplitAgentPanel'; // [personal]
 import { useHive } from '@/hooks/useHive';
 import { MemoryPanel } from '@/components/MemoryPanel';
 import { AgentDetailPanel } from '@/components/AgentDetailPanel';
@@ -41,6 +43,41 @@ export function App() {
   const setAddAgentOpen = useStore(s => s.setAddAgentOpen);
   const godStatus = useStore(s => s.godStatus);
   const fullscreenAgentId = useStore(s => s.fullscreenAgentId);
+  // [personal] Pixel office scene master switch — gates the OfficeFloor mount.
+  const officeSceneOn = useStore(s => s.officeScene);
+  // [personal] UI font mode — stamped on <html>; tokens.css swaps the faces.
+  const uiFont = useStore(s => s.uiFont);
+  useEffect(() => {
+    try { document.documentElement.dataset.uifont = uiFont; } catch { /* noop */ }
+  }, [uiFont]);
+  // [personal] UI chrome skin — stamped on <html>; modern.css swaps the chrome.
+  const uiTheme = useStore(s => s.uiTheme);
+  useEffect(() => {
+    try { document.documentElement.dataset.uitheme = uiTheme; } catch { /* noop */ }
+  }, [uiTheme]);
+  // [personal] Icon set — stamped on <html>; the Icon component reads it.
+  const uiIcons = useStore(s => s.uiIcons);
+  useEffect(() => {
+    try { document.documentElement.dataset.uiicons = uiIcons; } catch { /* noop */ }
+  }, [uiIcons]);
+  // [personal] Motion layer — stamped on <html>; animations.css gates on it.
+  const uiAnimations = useStore(s => s.uiAnimations);
+  useEffect(() => {
+    try { document.documentElement.dataset.animations = uiAnimations ? 'on' : 'off'; } catch { /* noop */ }
+  }, [uiAnimations]);
+  // [personal] SideRail layout switch.
+  const sidebarNavOn = useStore(s => s.sidebarNav);
+  // [personal] Split Agent Mode: drop-zone state + the live split.
+  const splitAgentModeOn = useStore(s => s.splitAgentMode);
+  const splitView = useStore(s => s.splitView);
+  const setSplitView = useStore(s => s.setSplitView);
+  const draggingAgentId = useStore(s => s.draggingAgentId);
+  const [dropSide, setDropSide] = useState<'left' | 'right' | null>(null);
+  const splitAgent = splitView ? agents.find((a) => a.id === splitView.agentId) : undefined;
+  // Auto-close when the split agent leaves the roster (archived/killed).
+  useEffect(() => {
+    if (splitView && !agents.some((a) => a.id === splitView.agentId)) setSplitView(null);
+  }, [agents, splitView, setSplitView]);
   const appThemeNow = useAppTheme();
   const fullscreenFilePath = useStore(s => s.fullscreenFilePath);
   const sidebarWidth = useStore(s => s.sidebarWidth);
@@ -98,6 +135,23 @@ export function App() {
       // show the voice button disabled-with-tooltip when Free Flow is on but no
       // Groq key is set (Settings keeps this in sync on save).
       useStore.getState().setHasGroqKey(!!c.groqApiKey);
+      // [personal] Mirror the office-scene master switch so the mount gate
+      // below reacts without a reload. Settings keeps this synced on toggle.
+      useStore.getState().setOfficeScene(c.officeScene === true);
+      // [personal] Mirror the UI font mode (stamped on <html> by the effect
+      // below; tokens.css carries the per-mode overrides).
+      useStore.getState().setUiFont(
+        c.uiFont === 'jakarta' ? 'jakarta' : 'pixel'
+      );
+      // [personal] Mirror the UI chrome skin (modern.css carries the overrides).
+      useStore.getState().setUiTheme(c.uiTheme === 'modern' ? 'modern' : 'classic');
+      // [personal] Icon set, rail layout, and motion layer.
+      useStore.getState().setUiIcons(c.uiIcons === 'huge' ? 'huge' : 'pixel');
+      useStore.getState().setSidebarNav(c.sidebarNav !== false);
+      useStore.getState().setUiAnimations(c.uiAnimations !== false);
+      // [personal] Split Agent Mode + editable display name.
+      useStore.getState().setSplitAgentMode(c.splitAgentMode === true);
+      useStore.getState().setAppName(c.appName?.trim() || 'Munder Difflin');
       // Mirror the active office theme so OfficeFloor renders it (gated on the
       // tvShowOffices flag; off = always the office). Settings keeps this synced.
       useStore.getState().setOfficeTheme(c.tvShowOffices ? (c.officeTheme ?? 'office') : 'office');
@@ -238,17 +292,33 @@ export function App() {
 
   return (
     <div style={{
-      display: 'flex', flexDirection: 'column',
+      display: 'flex',
+      flexDirection: sidebarNavOn ? 'row' : 'column',
       width: '100vw', height: '100vh',
       overflow: 'hidden'
     }}>
+      {/* [personal] Left icon rail (toggle: Settings → General → Sidebar).
+          Hosts the title-bar actions (theme / settings / fullscreen) when on. */}
+      {sidebarNavOn && (
+        <SideRail
+          onOpenSettings={(section) => { setSettingsSection(section); setSettingsOpen(true); }}
+        />
+      )}
+      <div style={{
+        display: 'flex', flexDirection: 'column',
+        flex: 1, minWidth: 0, minHeight: 0,
+        overflow: 'hidden'
+      }}>
       {/* rt-12: global fixed-overlay toast for voice-Michael completions ("Oscar
           finished X"). Self-positions bottom-right; renders null until one arrives. */}
       <CompletionToast />
       {/* v0.3.4: background-update toast ("restart to update"); renders null until
           main's updater pushes a status. */}
       <UpdateToast />
-      {/* Title bar */}
+      {/* Title bar — [personal] hidden entirely while the SideRail is on
+          (brand + update badge move into the rail; the rail's brand row is
+          the window drag region). */}
+      {!sidebarNavOn && (
       <div
         className="cth-titlebar-drag"
         style={{
@@ -352,51 +422,100 @@ export function App() {
         </button>
 
       </div>
+      )}
 
-      <div style={{
-        flex: 1, minHeight: 0,
-        display: 'flex',
-        padding: 16,
-        gap: 0
-      }}>
-        <div style={{ flex: 1, minHeight: 0, minWidth: 0, position: 'relative' }}>
-          <OfficeFloor />
-          <MemoryPanel />
-          {agentCount === 0 && godStatus === 'booting' && <MichaelBooting />}
-          {agentCount === 0 && godStatus !== 'booting' && (
-            <div style={{
-              position: 'absolute', inset: 0,
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              pointerEvents: 'none'
-            }}>
-              <div style={{ pointerEvents: 'auto', width: 360 }}>
-                <PixelPanel variant="dialog" title="EMPTY FLOOR" noPadding>
-                  <div style={{ padding: 16, display: 'flex', flexDirection: 'column', gap: 10 }}>
-                    <p style={{ margin: 0, fontSize: 13, lineHeight: '20px' }}>
-                      No agents on the floor yet. Spawn one to see real claude output stream in here.
-                    </p>
-                    <PixelButton variant="primary" size="md" onClick={() => setAddAgentOpen(true)}>
-                      <span style={{ display: 'inline-flex', gap: 6, alignItems: 'center' }}>
-                        <Icon name="plus" /> add agent
-                      </span>
-                    </PixelButton>
-                  </div>
-                </PixelPanel>
+      {/* [personal] Split Agent Mode: this row is the DROP ZONE — dragging an
+          agent card from the bottom strip over it previews which half will
+          open (tint + label), and dropping opens that agent beside the main
+          panel. Side = the half the pointer is on. NOTE: the handlers are JSX
+          props, NOT entries inside `style` — React silently ignores event
+          handlers nested in style, which made the zone reject every drop. */}
+      <div
+        style={{
+          flex: 1, minHeight: 0,
+          display: 'flex',
+          padding: 16,
+          gap: 0,
+          position: 'relative'
+        }}
+        onDragOver={splitAgentModeOn ? (e: React.DragEvent<HTMLDivElement>) => {
+          if (!draggingAgentId) return;
+          e.preventDefault();
+          e.dataTransfer.dropEffect = 'move';
+          const r = e.currentTarget.getBoundingClientRect();
+          setDropSide(e.clientX - r.left < r.width / 2 ? 'left' : 'right');
+        } : undefined}
+        onDragLeave={splitAgentModeOn ? (e: React.DragEvent<HTMLDivElement>) => {
+          if (e.target === e.currentTarget) setDropSide(null);
+        } : undefined}
+        onDrop={splitAgentModeOn ? (e: React.DragEvent<HTMLDivElement>) => {
+          const id = useStore.getState().draggingAgentId;
+          if (!id) return;
+          e.preventDefault();
+          setSplitView({ agentId: id, side: dropSide ?? 'right' });
+          setDropSide(null);
+          useStore.setState({ draggingAgentId: null });
+        } : undefined}
+      >
+        {/* [personal] The office floor column (and its splitter) exist ONLY
+            while the scene is on. Off = no reserved space at all: the command
+            center column below stretches to full width. */}
+        {officeSceneOn && (
+          <div style={{ flex: 1, minHeight: 0, minWidth: 0, position: 'relative' }}>
+            {/* [personal] The PixiJS office scene is a mount-level gate: off = the
+                canvas never initializes (no WebGL context, no sprite loading) and
+                the floor area serves the memory panel + empty states only. */}
+            <OfficeFloor />
+            <MemoryPanel />
+            {agentCount === 0 && godStatus === 'booting' && <MichaelBooting />}
+            {agentCount === 0 && godStatus !== 'booting' && (
+              <div style={{
+                position: 'absolute', inset: 0,
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                pointerEvents: 'none'
+              }}>
+                <div style={{ pointerEvents: 'auto', width: 360 }}>
+                  <PixelPanel variant="dialog" title="EMPTY FLOOR" noPadding>
+                    <div style={{ padding: 16, display: 'flex', flexDirection: 'column', gap: 10 }}>
+                      <p style={{ margin: 0, fontSize: 13, lineHeight: '20px' }}>
+                        No agents on the floor yet. Spawn one to see real claude output stream in here.
+                      </p>
+                      <PixelButton variant="primary" size="md" onClick={() => setAddAgentOpen(true)}>
+                        <span style={{ display: 'inline-flex', gap: 6, alignItems: 'center' }}>
+                          <Icon name="plus" /> add agent
+                        </span>
+                      </PixelButton>
+                    </div>
+                  </PixelPanel>
+                </div>
               </div>
-            </div>
-          )}
-        </div>
+            )}
+          </div>
+        )}
 
-        <SidebarSplitter
-          width={sidebarWidth}
-          onChange={setSidebarWidth}
-          viewportWidth={vpWidth}
-        />
+        {officeSceneOn && (
+          <SidebarSplitter
+            width={sidebarWidth}
+            onChange={setSidebarWidth}
+            viewportWidth={vpWidth}
+          />
+        )}
 
+        {/* [personal] Split Agent Mode: the command-center column row, with
+            the split terminal on the chosen edge of it. */}
+        <div style={{ flex: officeSceneOn ? '0 1 auto' : 1, minWidth: 0, minHeight: 0, display: 'flex', gap: 10 }}>
+        {splitAgent && splitAgentModeOn && splitView?.side === 'left' && (
+          <SplitAgentPanel agent={splitAgent} onClose={() => setSplitView(null)} />
+        )}
         <div style={{
-          width: sidebarWidth, flexShrink: 0,
+          ...(officeSceneOn
+            ? { width: sidebarWidth, flexShrink: 0 }
+            : { flex: 1, minWidth: 0, position: 'relative' }),
           minHeight: 0, display: 'flex', flexDirection: 'column'
         }}>
+          {/* [personal] With the scene off, the floating memory panel anchors
+              over the full-width column instead of the floor. */}
+          {!officeSceneOn && <MemoryPanel />}
           {agent ? (
             <AgentDetailPanel agent={agent} />
           ) : godStatus === 'booting' ? (
@@ -436,6 +555,36 @@ export function App() {
             </PixelPanel>
           )}
         </div>
+        {splitAgent && splitAgentModeOn && splitView?.side === 'right' && (
+          <SplitAgentPanel agent={splitAgent} onClose={() => setSplitView(null)} />
+        )}
+        </div>
+
+        {/* [personal] Drop-zone preview: the tinted half + label showing where
+            the dragged agent's split will open ("shifting" as you move between
+            halves). */}
+        {splitAgentModeOn && draggingAgentId && dropSide && (
+          <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', zIndex: 50 }}>
+            <div style={{
+              position: 'absolute', top: 0, bottom: 0, width: '50%',
+              ...(dropSide === 'left' ? { left: 0 } : { right: 0 }),
+              background: 'var(--cth-sky-light)',
+              opacity: 0.75,
+              boxShadow: 'inset 0 0 0 2px var(--cth-sky)',
+              borderRadius: 8,
+              display: 'flex', alignItems: 'center', justifyContent: 'center'
+            }}>
+              <span style={{
+                fontFamily: 'var(--cth-font-display)', fontSize: 10, lineHeight: '14px',
+                color: 'var(--cth-ink-900)', textTransform: 'uppercase',
+                padding: '6px 10px', background: 'var(--cth-paper-100)',
+                boxShadow: 'inset 0 0 0 1px var(--cth-ink-300)', borderRadius: 4
+              }}>
+                open on the {dropSide}
+              </span>
+            </div>
+          </div>
+        )}
       </div>
 
       <AgentStrip config={config} />
@@ -474,6 +623,7 @@ export function App() {
       {fullscreenFilePath && <FullscreenFileEditor />}
       {ideOpen && <IdePanel />}
       <TaskDetailOverlay />
+      </div>{/* [personal] end inner column (SideRail wrapper) */}
     </div>
   );
 }

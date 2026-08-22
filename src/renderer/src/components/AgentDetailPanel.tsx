@@ -30,6 +30,10 @@ export function AgentDetailPanel({ agent }: AgentDetailPanelProps) {
   const fullscreenAgentId = useStore(s => s.fullscreenAgentId);
   const sidebarTab = useStore(s => s.sidebarTab);
   const setSidebarTab = useStore(s => s.setSidebarTab);
+  // [personal] rail mode hides the header IDE button (the SideRail hosts it)
+  const railNav = useStore(s => s.sidebarNav);
+  // [personal] while the split panel shows this agent's pty, hand it over
+  const isSplitHere = useStore(s => (s.splitView?.agentId ?? null) === agent.id);
   const isReal = !!agent.ptyId;
   // While this agent is shown in the fullscreen overlay, the fullscreen view
   // owns the pty (it sizes it to fill the screen). Keeping the embedded terminal
@@ -118,12 +122,15 @@ export function AgentDetailPanel({ agent }: AgentDetailPanelProps) {
           </div>
         </div>
         {/* v0.3.4: the IDE lives at agent level (replaces the old files tab) —
-            opens the full-window Monaco editor rooted at this agent's workspace. */}
+            opens the full-window Monaco editor rooted at this agent's workspace.
+            [personal] Hidden in rail mode (the SideRail hosts the IDE button). */}
+        {!railNav && (
         <PixelButton variant="secondary" size="sm" onClick={() => useStore.getState().setIdeOpen(true, agent.id)}>
           <span title={`Open the IDE — file editor + git diff for ${agent.project}`} style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
             <Icon name="code" /> IDE
           </span>
         </PixelButton>
+        )}
         <PixelButton variant="secondary" size="sm" onClick={openTerminal} disabled={openTerminalState === 'opening'}>
           <span title={`open Terminal.app at ${agent.cwd}`} style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
             <Icon name="terminal" />
@@ -159,6 +166,11 @@ export function AgentDetailPanel({ agent }: AgentDetailPanelProps) {
             isFullscreenedHere ? (
               <EmptyTab title="In fullscreen">
                 This terminal is open in fullscreen. Press Esc or exit fullscreen to bring it back here.
+              </EmptyTab>
+            ) : isSplitHere ? (
+              /* [personal] the split panel owns this pty right now */
+              <EmptyTab title="In split view">
+                This terminal is open in the split panel. Close the split to bring it back here.
               </EmptyTab>
             ) : (
             <div style={{ flex: 1, minWidth: 0, minHeight: 0, display: 'flex', flexDirection: 'column' }}>

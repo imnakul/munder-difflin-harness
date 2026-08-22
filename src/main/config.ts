@@ -291,6 +291,41 @@ export interface HarnessConfig {
    *  without an injected key and environments with DO_NOT_TRACK set never send
    *  regardless of this flag. (Mirrored in preload + renderer config.) */
   telemetryEnabled?: boolean;
+  /** [personal] Master switch for the pixel-art office scene (OfficeFloor /
+   *  PixiJS). Default false on this fork = the scene never mounts (no canvas,
+   *  no WebGL context, no sprite assets) and the floor area renders empty
+   *  behind the memory panel. The installed upstream app ships the scene
+   *  always-on; flipping this to true restores it. */
+  officeScene?: boolean;
+  /** [personal] UI typeface: 'pixel' = upstream faces (Press Start 2P display +
+   *  Inter body); 'jakarta' = Plus Jakarta Sans for both. Mono/terminal never
+   *  changes. Default 'pixel' = upstream parity; flipped in Settings → New Look. */
+  uiFont?: 'pixel' | 'jakarta';
+  /** [personal] UI chrome skin: 'classic' = the retro pixel chrome (upstream);
+   *  'modern' = Apple/Raycast/Linear-style neutrals, soft shadows, rounded
+   *  corners (src/renderer/src/design/modern.css). Default 'classic' = upstream
+   *  parity; flipped in Settings → General. */
+  uiTheme?: 'classic' | 'modern';
+  /** [personal] Icon set: 'pixel' = the upstream 16px pixel glyphs; 'huge' =
+   *  HugeIcons free pack (stroke icons, modern look). Swap happens inside the
+   *  one Icon component (components/Icon.tsx). Default 'pixel'. */
+  uiIcons?: 'pixel' | 'huge';
+  /** [personal] Left icon rail (SideRail) replacing the title-bar action
+   *  buttons — theme/settings/fullscreen move off the top bar. Default ON for
+   *  the fork (upstream has no rail). */
+  sidebarNav?: boolean;
+  /** [personal] Motion layer: hover/press micro-interactions, panel mount
+   *  fades, directional Settings-tab slides, rail glide highlight
+   *  (design/animations.css). Default ON for the fork. */
+  uiAnimations?: boolean;
+  /** [personal] Split Agent Mode: when ON, an agent card dragged from the
+   *  bottom strip into the main area opens that agent's terminal side-by-side
+   *  with the main panel (left or right, chosen by where you drop). Default
+   *  OFF. Purely a renderer overlay — no spawn/hive involvement. */
+  splitAgentMode?: boolean;
+  /** [personal] User-editable display name for this install (Settings hero,
+   *  rail wordmark). Default 'Munder Difflin'. */
+  appName?: string;
   /** Master flag for the TV-show office themes feature (Settings theme picker +
    *  destructive switch flow). Default false = the picker is hidden and the
    *  office renders as today (zero behavior change). */
@@ -428,6 +463,19 @@ const DEFAULTS: HarnessConfig = {
   autoUpdate: true,
   telemetryEnabled: true,
   multiWindow: true,
+  // [personal] Fork ships the pixel office scene OFF (upstream: always on).
+  officeScene: false,
+  // [personal] 'jakarta' swaps Press Start 2P + Inter for Plus Jakarta Sans.
+  uiFont: 'pixel',
+  // [personal] 'modern' = the Linear/Raycast-style skin (design/modern.css).
+  uiTheme: 'classic',
+  // [personal] fork defaults: rail + motion on, pixel icons.
+  uiIcons: 'pixel',
+  sidebarNav: true,
+  uiAnimations: true,
+  // [personal] split view + editable display name
+  splitAgentMode: false,
+  appName: 'Munder Difflin',
   tvShowOffices: false,
   officeTheme: 'office',
   slackEnabled: false,
