@@ -12,6 +12,7 @@ import {
 } from '@shared/triggers';
 import { PixelPanel } from './PixelPanel';
 import { PixelButton } from './PixelButton';
+import { SettingsSwitch } from './SettingsSwitch'; // [personal]
 import { UpdatesSection } from './UpdatesSection';
 import { SettingsHeroCard } from './SettingsHeroCard';
 import { SetupPanel } from './SetupPanel';
@@ -922,7 +923,7 @@ export function SettingsModal({ config, onClose, initialSection }: SettingsModal
               <div className="cth-settings-body" /* [personal] modern-skin zoom hook */ style={{ display: 'flex', flex: 1, overflow: 'hidden', minHeight: 0 }}>
 
                 {/* Left nav */}
-                <div style={{
+                <div className="cth-settings-nav" /* [personal] modern-skin hook */ style={{
                   width: 160, flexShrink: 0,
                   display: 'flex', flexDirection: 'column',
                   borderRight: '2px solid var(--cth-ink-300)',
@@ -1171,6 +1172,9 @@ export function SettingsModal({ config, onClose, initialSection }: SettingsModal
                               canvas, no WebGL) and the floor area stays clear.
                             </span>
                           </div>
+                          {uiTheme === 'modern'
+                            ? <SettingsSwitch on={officeSceneOn} onChange={toggleOfficeScene} />
+                            : (
                           <PixelButton
                             variant={officeSceneOn ? 'primary' : 'secondary'}
                             size="sm"
@@ -1178,6 +1182,7 @@ export function SettingsModal({ config, onClose, initialSection }: SettingsModal
                           >
                             {officeSceneOn ? 'on' : 'off'}
                           </PixelButton>
+                            )}
                         </div>
                         <div style={{ height: 10 }} />
                         {/* [personal] UI typeface picker — pixel brand vs Plus Jakarta Sans */}
@@ -1250,6 +1255,9 @@ export function SettingsModal({ config, onClose, initialSection }: SettingsModal
                               rail on the left edge.
                             </span>
                           </div>
+                          {uiTheme === 'modern'
+                            ? <SettingsSwitch on={sidebarNavOn} onChange={toggleSidebarNav} />
+                            : (
                           <PixelButton
                             variant={sidebarNavOn ? 'primary' : 'secondary'}
                             size="sm"
@@ -1257,6 +1265,7 @@ export function SettingsModal({ config, onClose, initialSection }: SettingsModal
                           >
                             {sidebarNavOn ? 'on' : 'off'}
                           </PixelButton>
+                            )}
                         </div>
                         <div style={{ height: 10 }} />
                         {/* [personal] Split Agent Mode */}
@@ -1271,6 +1280,9 @@ export function SettingsModal({ config, onClose, initialSection }: SettingsModal
                               to choose the side.
                             </span>
                           </div>
+                          {uiTheme === 'modern'
+                            ? <SettingsSwitch on={splitModeOn} onChange={toggleSplitMode} />
+                            : (
                           <PixelButton
                             variant={splitModeOn ? 'primary' : 'secondary'}
                             size="sm"
@@ -1278,6 +1290,7 @@ export function SettingsModal({ config, onClose, initialSection }: SettingsModal
                           >
                             {splitModeOn ? 'on' : 'off'}
                           </PixelButton>
+                            )}
                         </div>
                         <div style={{ height: 10 }} />
                         {/* [personal] Motion layer */}
@@ -1291,6 +1304,9 @@ export function SettingsModal({ config, onClose, initialSection }: SettingsModal
                               directional tab slides, and the sliding rail highlight.
                             </span>
                           </div>
+                          {uiTheme === 'modern'
+                            ? <SettingsSwitch on={animationsOn} onChange={toggleAnimations} />
+                            : (
                           <PixelButton
                             variant={animationsOn ? 'primary' : 'secondary'}
                             size="sm"
@@ -1298,6 +1314,7 @@ export function SettingsModal({ config, onClose, initialSection }: SettingsModal
                           >
                             {animationsOn ? 'on' : 'off'}
                           </PixelButton>
+                            )}
                         </div>
                         <div style={{ height: 10 }} />
                         {/* [personal] Icon set */}
