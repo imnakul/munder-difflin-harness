@@ -1,0 +1,207 @@
+/* [personal] Named color themes — the "Theme" dropdown in Settings →
+   Appearance (visible only while uiTheme='modern'). Each block swaps the
+   surface/ink/accent/status tokens for a well-known editor palette; a block
+   applies when BOTH data-uitheme='modern' AND data-ctheme='<id>' are stamped
+   on <html> (App stamps ctheme from config.uiThemePreset).
+
+   A named theme intentionally overrides the app's light/dark toggle too (the
+   blocks sit after tokens.css's dark block in the cascade): a theme IS the
+   palette, like an editor theme. 'default' = the untinted modern skin.
+
+   The accent "-light" tint tokens and panel-border tokens are derived from
+   the theme's own colors via color-mix, so each block only states the core
+   palette. */
+
+/* ── One Dark Pro ─────────────────────────────────────────────────────────── */
+:root[data-uitheme='modern'][data-ctheme='one-dark'] {
+  --cth-cream-50: #21252b;   /* app ground */
+  --cth-cream-100: #282c34;  /* panels */
+  --cth-cream-200: #2c313a;  /* inset fills / hovers */
+  --cth-cream-300: #3e4451;  /* disabled fills */
+  --cth-paper-100: #282c34;  /* cards, inputs, terminals */
+  --cth-paper-200: #2e343d;
+
+  --cth-ink-900: #abb2bf;    /* primary text */
+  --cth-ink-700: #9da5b4;
+  --cth-ink-500: #7f848e;
+  --cth-ink-300: #3e4451;    /* hairline borders */
+  --cth-ink-100: #2c313a;    /* dividers */
+
+  --cth-coral: #e06c75;  --cth-mint: #98c379;  --cth-sky: #61afef;
+  --cth-lemon: #e5c07b;  --cth-lilac: #c678dd; --cth-peach: #d19a66;
+  --cth-on-accent: #282c34;
+
+  --cth-status-idle: #7f848e;      --cth-status-thinking: #61afef;
+  --cth-status-working: #e5c07b;   --cth-status-waiting: #c678dd;
+  --cth-status-blocked: #e06c75;   --cth-status-success: #98c379;
+  --cth-status-ghost: #5c6370;     --cth-status-compacting: #c678dd;
+  --cth-status-looping: #d19a66;   --cth-status-typing: #e5c07b;
+
+  --cth-coral-light: color-mix(in srgb, var(--cth-coral) 22%, var(--cth-cream-100));
+  --cth-mint-light: color-mix(in srgb, var(--cth-mint) 22%, var(--cth-cream-100));
+  --cth-sky-light: color-mix(in srgb, var(--cth-sky) 22%, var(--cth-cream-100));
+  --cth-lemon-light: color-mix(in srgb, var(--cth-lemon) 22%, var(--cth-cream-100));
+  --cth-lilac-light: color-mix(in srgb, var(--cth-lilac) 22%, var(--cth-cream-100));
+  --cth-peach-light: color-mix(in srgb, var(--cth-peach) 22%, var(--cth-cream-100));
+
+  --cth-panel-border: inset 0 0 0 1px var(--cth-ink-300), 0 1px 2px rgba(0, 0, 0, 0.35);
+  --cth-panel-border-inset: inset 0 0 0 1px var(--cth-ink-100);
+  --cth-panel-border-terminal: inset 0 0 0 1px var(--cth-ink-300);
+  --cth-panel-border-dialog: inset 0 0 0 1px var(--cth-ink-500), 0 12px 32px -8px rgba(0, 0, 0, 0.55);
+}
+
+/* ── GitHub Dark ──────────────────────────────────────────────────────────── */
+:root[data-uitheme='modern'][data-ctheme='github-dark'] {
+  --cth-cream-50: #0d1117;
+  --cth-cream-100: #161b22;
+  --cth-cream-200: #21262d;
+  --cth-cream-300: #30363d;
+  --cth-paper-100: #0d1117;
+  --cth-paper-200: #161b22;
+
+  --cth-ink-900: #e6edf3;
+  --cth-ink-700: #b6bec8;
+  --cth-ink-500: #8b949e;
+  --cth-ink-300: #30363d;
+  --cth-ink-100: #21262d;
+
+  --cth-coral: #f85149;  --cth-mint: #3fb950;  --cth-sky: #58a6ff;
+  --cth-lemon: #d29922;  --cth-lilac: #bc8cff; --cth-peach: #db6d28;
+  --cth-on-accent: #ffffff;
+
+  --cth-status-idle: #8b949e;      --cth-status-thinking: #58a6ff;
+  --cth-status-working: #d29922;   --cth-status-waiting: #bc8cff;
+  --cth-status-blocked: #f85149;   --cth-status-success: #3fb950;
+  --cth-status-ghost: #6e7681;     --cth-status-compacting: #bc8cff;
+  --cth-status-looping: #db6d28;   --cth-status-typing: #d29922;
+
+  --cth-coral-light: color-mix(in srgb, var(--cth-coral) 22%, var(--cth-cream-100));
+  --cth-mint-light: color-mix(in srgb, var(--cth-mint) 22%, var(--cth-cream-100));
+  --cth-sky-light: color-mix(in srgb, var(--cth-sky) 22%, var(--cth-cream-100));
+  --cth-lemon-light: color-mix(in srgb, var(--cth-lemon) 22%, var(--cth-cream-100));
+  --cth-lilac-light: color-mix(in srgb, var(--cth-lilac) 22%, var(--cth-cream-100));
+  --cth-peach-light: color-mix(in srgb, var(--cth-peach) 22%, var(--cth-cream-100));
+
+  --cth-panel-border: inset 0 0 0 1px var(--cth-ink-300), 0 1px 2px rgba(1, 4, 9, 0.4);
+  --cth-panel-border-inset: inset 0 0 0 1px var(--cth-ink-100);
+  --cth-panel-border-terminal: inset 0 0 0 1px var(--cth-ink-300);
+  --cth-panel-border-dialog: inset 0 0 0 1px var(--cth-ink-500), 0 12px 32px -8px rgba(1, 4, 9, 0.65);
+}
+
+/* ── Nord ─────────────────────────────────────────────────────────────────── */
+:root[data-uitheme='modern'][data-ctheme='nord'] {
+  --cth-cream-50: #242933;
+  --cth-cream-100: #2e3440;   /* nord0 */
+  --cth-cream-200: #3b4252;   /* nord1 */
+  --cth-cream-300: #434c5e;   /* nord2 */
+  --cth-paper-100: #2e3440;
+  --cth-paper-200: #353c4a;
+
+  --cth-ink-900: #eceff4;     /* nord6 */
+  --cth-ink-700: #d8dee9;     /* nord4 */
+  --cth-ink-500: #9da8b8;
+  --cth-ink-300: #434c5e;
+  --cth-ink-100: #3b4252;
+
+  --cth-coral: #bf616a;  --cth-mint: #a3be8c;  --cth-sky: #88c0d0;
+  --cth-lemon: #ebcb8b;  --cth-lilac: #b48ead; --cth-peach: #d08770;
+  --cth-on-accent: #2e3440;
+
+  --cth-status-idle: #9da8b8;      --cth-status-thinking: #88c0d0;
+  --cth-status-working: #ebcb8b;   --cth-status-waiting: #b48ead;
+  --cth-status-blocked: #bf616a;   --cth-status-success: #a3be8c;
+  --cth-status-ghost: #4c566a;     --cth-status-compacting: #b48ead;
+  --cth-status-looping: #d08770;   --cth-status-typing: #ebcb8b;
+
+  --cth-coral-light: color-mix(in srgb, var(--cth-coral) 22%, var(--cth-cream-100));
+  --cth-mint-light: color-mix(in srgb, var(--cth-mint) 22%, var(--cth-cream-100));
+  --cth-sky-light: color-mix(in srgb, var(--cth-sky) 22%, var(--cth-cream-100));
+  --cth-lemon-light: color-mix(in srgb, var(--cth-lemon) 22%, var(--cth-cream-100));
+  --cth-lilac-light: color-mix(in srgb, var(--cth-lilac) 22%, var(--cth-cream-100));
+  --cth-peach-light: color-mix(in srgb, var(--cth-peach) 22%, var(--cth-cream-100));
+
+  --cth-panel-border: inset 0 0 0 1px var(--cth-ink-300), 0 1px 2px rgba(46, 52, 64, 0.5);
+  --cth-panel-border-inset: inset 0 0 0 1px var(--cth-ink-100);
+  --cth-panel-border-terminal: inset 0 0 0 1px var(--cth-ink-300);
+  --cth-panel-border-dialog: inset 0 0 0 1px var(--cth-ink-500), 0 12px 32px -8px rgba(36, 41, 51, 0.7);
+}
+
+/* ── Rosé Pine ────────────────────────────────────────────────────────────── */
+:root[data-uitheme='modern'][data-ctheme='rose-pine'] {
+  --cth-cream-50: #191724;   /* base */
+  --cth-cream-100: #1f1d2e;  /* surface */
+  --cth-cream-200: #26233a;  /* overlay */
+  --cth-cream-300: #3b3853;
+  --cth-paper-100: #1f1d2e;
+  --cth-paper-200: #26233a;
+
+  --cth-ink-900: #e0def4;    /* text */
+  --cth-ink-700: #adabc2;
+  --cth-ink-500: #908caa;    /* subtle */
+  --cth-ink-300: #403d5c;
+  --cth-ink-100: #302d46;
+
+  --cth-coral: #eb6f92;  /* love */
+  --cth-mint: #9ccfd8;   /* foam */
+  --cth-sky: #9ccfd8;
+  --cth-lemon: #f6c177;  /* gold */
+  --cth-lilac: #c4a7e7;  /* iris */
+  --cth-peach: #ebbcfa;  /* rose */
+  --cth-on-accent: #191724;
+
+  --cth-status-idle: #908caa;      --cth-status-thinking: #9ccfd8;
+  --cth-status-working: #f6c177;   --cth-status-waiting: #c4a7e7;
+  --cth-status-blocked: #eb6f92;   --cth-status-success: #9ccfd8;
+  --cth-status-ghost: #6e6a86;     --cth-status-compacting: #c4a7e7;
+  --cth-status-looping: #ebbcfa;   --cth-status-typing: #f6c177;
+
+  --cth-coral-light: color-mix(in srgb, var(--cth-coral) 22%, var(--cth-cream-100));
+  --cth-mint-light: color-mix(in srgb, var(--cth-mint) 22%, var(--cth-cream-100));
+  --cth-sky-light: color-mix(in srgb, var(--cth-sky) 22%, var(--cth-cream-100));
+  --cth-lemon-light: color-mix(in srgb, var(--cth-lemon) 22%, var(--cth-cream-100));
+  --cth-lilac-light: color-mix(in srgb, var(--cth-lilac) 22%, var(--cth-cream-100));
+  --cth-peach-light: color-mix(in srgb, var(--cth-peach) 22%, var(--cth-cream-100));
+
+  --cth-panel-border: inset 0 0 0 1px var(--cth-ink-300), 0 1px 2px rgba(0, 0, 0, 0.35);
+  --cth-panel-border-inset: inset 0 0 0 1px var(--cth-ink-100);
+  --cth-panel-border-terminal: inset 0 0 0 1px var(--cth-ink-300);
+  --cth-panel-border-dialog: inset 0 0 0 1px var(--cth-ink-500), 0 12px 32px -8px rgba(0, 0, 0, 0.6);
+}
+
+/* ── One Light ────────────────────────────────────────────────────────────── */
+:root[data-uitheme='modern'][data-ctheme='one-light'] {
+  --cth-cream-50: #f0f0f1;
+  --cth-cream-100: #ffffff;
+  --cth-cream-200: #f3f3f4;
+  --cth-cream-300: #e3e4e5;
+  --cth-paper-100: #ffffff;
+  --cth-paper-200: #fafafa;
+
+  --cth-ink-900: #383a42;
+  --cth-ink-700: #4f525e;
+  --cth-ink-500: #696c77;
+  --cth-ink-300: #d7d7db;
+  --cth-ink-100: #ecedee;
+
+  --cth-coral: #e45649;  --cth-mint: #50a14f;  --cth-sky: #4078f2;
+  --cth-lemon: #c18401;  --cth-lilac: #a626a4; --cth-peach: #da854c;
+  --cth-on-accent: #ffffff;
+
+  --cth-status-idle: #696c77;      --cth-status-thinking: #4078f2;
+  --cth-status-working: #c18401;   --cth-status-waiting: #a626a4;
+  --cth-status-blocked: #e45649;   --cth-status-success: #50a14f;
+  --cth-status-ghost: #a0a1a7;     --cth-status-compacting: #a626a4;
+  --cth-status-looping: #da854c;   --cth-status-typing: #c18401;
+
+  --cth-coral-light: color-mix(in srgb, var(--cth-coral) 16%, var(--cth-cream-100));
+  --cth-mint-light: color-mix(in srgb, var(--cth-mint) 16%, var(--cth-cream-100));
+  --cth-sky-light: color-mix(in srgb, var(--cth-sky) 16%, var(--cth-cream-100));
+  --cth-lemon-light: color-mix(in srgb, var(--cth-lemon) 16%, var(--cth-cream-100));
+  --cth-lilac-light: color-mix(in srgb, var(--cth-lilac) 16%, var(--cth-cream-100));
+  --cth-peach-light: color-mix(in srgb, var(--cth-peach) 16%, var(--cth-cream-100));
+
+  --cth-panel-border: inset 0 0 0 1px var(--cth-ink-300), 0 1px 2px rgba(56, 58, 66, 0.06);
+  --cth-panel-border-inset: inset 0 0 0 1px var(--cth-ink-100);
+  --cth-panel-border-terminal: inset 0 0 0 1px var(--cth-ink-300);
+  --cth-panel-border-dialog: inset 0 0 0 1px var(--cth-ink-500), 0 12px 32px -8px rgba(56, 58, 66, 0.18);
+}

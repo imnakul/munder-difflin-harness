@@ -278,6 +278,9 @@ interface State {
   /** [personal] Mirror of config.uiPortraits — SpritePortrait reads it. */
   uiPortraits: 'pixel' | 'svg';
   setUiPortraits: (mode: 'pixel' | 'svg') => void;
+  /** [personal] Mirror of config.uiThemePreset — App stamps data-ctheme. */
+  uiThemePreset: string;
+  setUiThemePreset: (id: string) => void;
   /** [personal] Split view: up to MAX_SPLITS agents shown side-by-side with
    *  the main panel, each pinned to an edge. Set by the main-area drop zone
    *  (App.tsx) while Split Agent Mode is on. */
@@ -810,6 +813,8 @@ export const useStore = create<State>((set) => ({
   setAppName: (name) => set({ appName: name }),
   uiPortraits: 'pixel',
   setUiPortraits: (mode) => set({ uiPortraits: mode }),
+  uiThemePreset: 'default',
+  setUiThemePreset: (id) => set({ uiThemePreset: id }),
   splits: [],
   setSplits: (v) => set({ splits: v }),
   draggingAgentId: null,

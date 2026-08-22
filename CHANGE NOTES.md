@@ -292,7 +292,7 @@ toggle applies LIVE (no restart).
   instead of painting the canvas busts.
 - **Drop your SVG collection into
   `src/renderer/src/assets/avatars/`** (owner's pack: 3D-style avatars), then
-  Settings → New Look → Portraits → `3D`. Adding/removing files reshuffles
+  Settings → Appearance → Portraits → `3D`. Adding/removing files reshuffles
   picks (hash) — expected while curating.
 - **3D display rules** (why it looked cropped at first): pixel busts use
   portrait-ratio tiles (36×46 etc.) with deliberate top-anchor + foot-crop;
@@ -308,10 +308,25 @@ toggle applies LIVE (no restart).
 
 ---
 
+### 4.9 `uiThemePreset` — named color themes (modern-only)
+
+- **New file** `src/renderer/src/design/themes.css` — one token block per
+  theme, gated on `:root[data-uitheme='modern'][data-ctheme='<id>']`. Shipped
+  set: `one-dark` (One Dark Pro), `github-dark`, `nord`, `rose-pine`,
+  `one-light`, plus `default` (untinted modern). A theme intentionally
+  overrides the app light/dark toggle (a theme IS the palette). Accent tints
+  and panel borders derive via `color-mix` from each theme's own colors.
+- `Settings → Appearance → "Theme"` dropdown (visible only while UI style is
+  modern) — config key `uiThemePreset`, stamped as `data-ctheme` on `<html>`.
+- Renamed the Settings section **"New Look" → "Appearance"** (upstream never
+  had an Appearance tab; office themes lived in General before the fork moved
+  them). The section's intro header read "PERSONAL FORK" → now "APPEARANCE".
+
 ## 5. New files added by the fork (never conflict upstream)
 
 - `src/renderer/src/design/modern.css`
 - `src/renderer/src/design/animations.css`
+- `src/renderer/src/design/themes.css`
 - `src/renderer/src/components/SideRail.tsx`
 - `CHANGE NOTES.md` (this file), `AGENTS.md`
 

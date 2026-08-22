@@ -3,6 +3,8 @@
 @import './modern.css';
 /* [personal] Motion layer (opt-in; inert unless data-animations='on'). */
 @import './animations.css';
+/* [personal] Named color themes (opt-in; inert unless data-ctheme set + modern). */
+@import './themes.css';
 
 *, *::before, *::after { box-sizing: border-box; }
 

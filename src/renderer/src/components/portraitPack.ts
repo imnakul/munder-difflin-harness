@@ -2,7 +2,7 @@
  * [personal] portraitPack — the drop-in SVG avatar pack for SpritePortrait.
  *
  * Drop any number of .svg files into `src/renderer/src/assets/avatars/` (the
- * owner's collection is ~116) and flip Settings → New Look → "Portraits" to
+ * owner's collection is ~116) and flip Settings → Appearance → "Portraits" to
  * `svg`. Every character gets a STABLE pick from the pack (hash of the
  * character name), so a given agent always shows the same avatar across
  * restarts. An empty folder (or 'pixel' mode) falls back to the upstream

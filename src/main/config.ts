@@ -299,7 +299,7 @@ export interface HarnessConfig {
   officeScene?: boolean;
   /** [personal] UI typeface: 'pixel' = upstream faces (Press Start 2P display +
    *  Inter body); 'jakarta' = Plus Jakarta Sans for both. Mono/terminal never
-   *  changes. Default 'pixel' = upstream parity; flipped in Settings → New Look. */
+   *  changes. Default 'pixel' = upstream parity; flipped in Settings → Appearance. */
   uiFont?: 'pixel' | 'jakarta';
   /** [personal] UI chrome skin: 'classic' = the retro pixel chrome (upstream);
    *  'modern' = Apple/Raycast/Linear-style neutrals, soft shadows, rounded
@@ -330,6 +330,11 @@ export interface HarnessConfig {
    *  the drop-in pack in src/renderer/src/assets/avatars/ (stable per-character
    *  pick; empty folder falls back to pixel). */
   uiPortraits?: 'pixel' | 'svg';
+  /** [personal] Color theme preset (only honored while uiTheme='modern'):
+   *  'default' = the untinted modern skin; any other value selects a named
+   *  editor palette (design/themes.css) — One Dark Pro, GitHub Dark/Light,
+   *  Tokyo Night, Catppuccin, Dracula, Nord, etc. */
+  uiThemePreset?: string;
   /** Master flag for the TV-show office themes feature (Settings theme picker +
    *  destructive switch flow). Default false = the picker is hidden and the
    *  office renders as today (zero behavior change). */
@@ -481,6 +486,7 @@ const DEFAULTS: HarnessConfig = {
   splitAgentMode: false,
   appName: 'Munder Difflin',
   uiPortraits: 'pixel',
+  uiThemePreset: 'default',
   tvShowOffices: false,
   officeTheme: 'office',
   slackEnabled: false,

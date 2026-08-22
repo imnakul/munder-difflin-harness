@@ -157,8 +157,8 @@ function clearLocalState(): void {
 // v0.3.4 redesign: six tabs, one topic each. 'AI Engines' folded into
 // Agents & Models; MCP + Slack + webhook + REST live together in Connections;
 // voice gets its own tab; Danger Zone became a red row at the bottom of General.
-export type Section = 'General' | 'New Look' | 'Prerequisites' | 'Agents & Models' | 'Autonomy & Budgets' | 'Connections' | 'Voice' | 'Memory & Knowledge';
-const NAV_SECTIONS: Section[] = ['General', 'New Look', 'Prerequisites', 'Agents & Models', 'Autonomy & Budgets', 'Connections', 'Voice', 'Memory & Knowledge'];
+export type Section = 'General' | 'Appearance' | 'Prerequisites' | 'Agents & Models' | 'Autonomy & Budgets' | 'Connections' | 'Voice' | 'Memory & Knowledge';
+const NAV_SECTIONS: Section[] = ['General', 'Appearance', 'Prerequisites', 'Agents & Models', 'Autonomy & Budgets', 'Connections', 'Voice', 'Memory & Knowledge'];
 
 export function SettingsModal({ config, onClose, initialSection }: SettingsModalProps) {
   const [confirming, setConfirming] = useState(false);
@@ -430,6 +430,18 @@ export function SettingsModal({ config, onClose, initialSection }: SettingsModal
       await window.cth.updateConfig({ uiTheme: mode } as Partial<HarnessConfig>);
       useStore.getState().setUiTheme(mode);
     } catch { setUiThemeLocal(prev); }
+  };
+  // [personal] Named color theme preset (modern-only). Applied live via the
+  // data-ctheme attribute; themes.css carries the palettes.
+  const [themePreset, setThemePresetLocal] = useState<string>(useStore.getState().uiThemePreset);
+  const chooseThemePreset = async (id: string) => {
+    if (id === themePreset) return;
+    const prev = themePreset;
+    setThemePresetLocal(id);
+    try {
+      await window.cth.updateConfig({ uiThemePreset: id } as Partial<HarnessConfig>);
+      useStore.getState().setUiThemePreset(id);
+    } catch { setThemePresetLocal(prev); }
   };
   // [personal] Sidebar rail / motion layer / icon set — same toggle pattern.
   const [sidebarNavOn, setSidebarNavLocal] = useState<boolean>(useStore.getState().sidebarNav);
@@ -1146,17 +1158,17 @@ export function SettingsModal({ config, onClose, initialSection }: SettingsModal
                   )}
 
                   {/* ─── [personal] NEW LOOK — every fork toggle in one place ────
-                      Mirrors CHANGE NOTES.md §4: all of these are additive,
+                      Mirrors CHANGE NOTES.md §4 (was "Personal fork"): all of these are additive,
                       toggle-gated, and OFF (or 'pixel'/'classic') = exact
                       upstream behavior. */}
-                  {activeSection === 'New Look' && (
+                  {activeSection === 'Appearance' && (
                     <>
                       <div>
                         <div style={{
                           fontFamily: 'var(--cth-font-display)', fontSize: 8, lineHeight: '12px',
                           color: 'var(--cth-ink-500)', textTransform: 'uppercase', marginBottom: 6
                         }}>
-                          Personal fork
+                          Appearance
                         </div>
                         <span style={{ fontSize: 12.5, lineHeight: '18px', color: 'var(--cth-ink-500)', display: 'block', marginBottom: 14 }}>
                           Every toggle below belongs to this fork (see CHANGE NOTES.md). Defaults marked
@@ -1244,6 +1256,40 @@ export function SettingsModal({ config, onClose, initialSection }: SettingsModal
                             </PixelButton>
                           </div>
                         </div>
+                        {uiTheme === 'modern' && (
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                            <span style={{ fontSize: 13, lineHeight: '20px', color: 'var(--cth-ink-900)' }}>
+                              Theme
+                            </span>
+                            <span style={{ fontSize: 12, lineHeight: '16px', color: 'var(--cth-ink-500)' }}>
+                              A named color palette for the whole app — the editor classics. Only applies
+                              while UI style is modern; a theme also overrides the light/dark toggle.
+                            </span>
+                          </div>
+                          <select
+                            value={themePreset}
+                            onChange={(e) => { void chooseThemePreset(e.target.value); }}
+                            style={{
+                              flexShrink: 0, minWidth: 150,
+                              padding: '5px 8px',
+                              fontFamily: 'var(--cth-font-ui)', fontSize: 13,
+                              color: 'var(--cth-ink-900)',
+                              background: 'var(--cth-cream-100)',
+                              border: 'none', borderRadius: 8,
+                              boxShadow: 'inset 0 0 0 1px var(--cth-ink-300)',
+                              cursor: 'pointer'
+                            }}
+                          >
+                            <option value="default">Default</option>
+                            <option value="one-dark">One Dark Pro</option>
+                            <option value="github-dark">GitHub Dark</option>
+                            <option value="nord">Nord</option>
+                            <option value="rose-pine">Rosé Pine</option>
+                            <option value="one-light">One Light</option>
+                          </select>
+                        </div>
+                        )}
                         <div style={{ height: 10 }} />
                         {/* [personal] Sidebar rail */}
                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
