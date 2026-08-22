@@ -1,6 +1,8 @@
 import { useEffect, useRef } from 'react';
 import { paintCastPortrait, type OfficeCharacterName } from '@/scene/office/cast';
 import { PORTRAIT_W, PORTRAIT_H } from '@/scene/office/portraitArt';
+import { useStore } from '@/store/store';
+import { svgAvatarFor } from './portraitPack'; // [personal]
 
 const FRAME_W = PORTRAIT_W;
 const FRAME_H = PORTRAIT_H;
@@ -44,6 +46,26 @@ export function SpritePortrait({
   // blurry).
   const w = Math.round(FRAME_W * scale);
   const h = Math.round(FRAME_H * scale);
+
+  // [personal] SVG portrait pack: when config.uiPortraits is 'svg' AND at
+  // least one SVG exists in assets/avatars, render a stable per-character
+  // pick from that pack instead of painting the pixel bust. Empty folder or
+  // 'pixel' mode = the upstream canvas, untouched.
+  const portraitMode = useStore((s) => s.uiPortraits);
+  const svgUrl = portraitMode === 'svg' ? svgAvatarFor(character) : null;
+  if (svgUrl) {
+    return (
+      <img
+        src={svgUrl}
+        alt=""
+        style={{
+          width: w, height: h,
+          objectFit: 'cover',
+          imageRendering: 'auto'
+        }}
+      />
+    );
+  }
 
   return (
     <canvas

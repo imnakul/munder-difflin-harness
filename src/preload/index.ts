@@ -333,6 +333,8 @@ export interface HarnessConfig {
   splitAgentMode?: boolean;
   /** [personal] Editable display name; mirrors main. */
   appName?: string;
+  /** [personal] Agent portraits ('pixel' | 'svg'); mirrors main. */
+  uiPortraits?: 'pixel' | 'svg';
   /** TV-show office themes feature flag (Settings picker + switch flow). Default OFF. */
   tvShowOffices?: boolean;
   /** Active office map/cast theme (honored only when tvShowOffices is on). */

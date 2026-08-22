@@ -326,6 +326,10 @@ export interface HarnessConfig {
   /** [personal] User-editable display name for this install (Settings hero,
    *  rail wordmark). Default 'Munder Difflin'. */
   appName?: string;
+  /** [personal] Agent portraits: 'pixel' = the upstream canvas busts; 'svg' =
+   *  the drop-in pack in src/renderer/src/assets/avatars/ (stable per-character
+   *  pick; empty folder falls back to pixel). */
+  uiPortraits?: 'pixel' | 'svg';
   /** Master flag for the TV-show office themes feature (Settings theme picker +
    *  destructive switch flow). Default false = the picker is hidden and the
    *  office renders as today (zero behavior change). */
@@ -476,6 +480,7 @@ const DEFAULTS: HarnessConfig = {
   // [personal] split view + editable display name
   splitAgentMode: false,
   appName: 'Munder Difflin',
+  uiPortraits: 'pixel',
   tvShowOffices: false,
   officeTheme: 'office',
   slackEnabled: false,

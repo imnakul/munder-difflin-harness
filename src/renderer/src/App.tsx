@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useStore, selectedAgent } from '@/store/store';
 import { startMockLoop, stopMockLoop } from '@/store/mockEvents';
 import type { HarnessConfig } from '@/store/config';
@@ -67,17 +67,52 @@ export function App() {
   }, [uiAnimations]);
   // [personal] SideRail layout switch.
   const sidebarNavOn = useStore(s => s.sidebarNav);
-  // [personal] Split Agent Mode: drop-zone state + the live split.
+  // [personal] Split Agent Mode: drop-zone state + the live splits (max 3).
   const splitAgentModeOn = useStore(s => s.splitAgentMode);
-  const splitView = useStore(s => s.splitView);
-  const setSplitView = useStore(s => s.setSplitView);
+  const splits = useStore(s => s.splits);
+  const setSplits = useStore(s => s.setSplits);
   const draggingAgentId = useStore(s => s.draggingAgentId);
   const [dropSide, setDropSide] = useState<'left' | 'right' | null>(null);
-  const splitAgent = splitView ? agents.find((a) => a.id === splitView.agentId) : undefined;
-  // Auto-close when the split agent leaves the roster (archived/killed).
+  // Pane widths as fractions of the split row (defaults equal; resizers drag).
+  // Reset to equal whenever the pane COUNT changes (open/close/move a split).
+  const lefts = splits.filter((sp) => sp.side === 'left');
+  const rights = splits.filter((sp) => sp.side === 'right');
+  const paneCount = splits.length + 1; // splits + the main column
+  const [fracs, setFracs] = useState<number[]>([]);
+  const splitRowRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
-    if (splitView && !agents.some((a) => a.id === splitView.agentId)) setSplitView(null);
-  }, [agents, splitView, setSplitView]);
+    setFracs(Array.from({ length: paneCount }, () => 1 / paneCount));
+  }, [paneCount]);
+  const splitAgentById = (id: string) => agents.find((a) => a.id === id);
+  // Drag-to-resize between adjacent panes: adjusts the two neighbors' fractions
+  // (each clamped to 10–85% of the row) with window listeners until mouseup.
+  const startResize = (i: number) => (e: React.MouseEvent) => {
+    e.preventDefault();
+    const startX = e.clientX;
+    const start = fracs.slice();
+    const rowW = splitRowRef.current?.offsetWidth ?? 1;
+    const onMove = (ev: MouseEvent): void => {
+      const a = Math.min(0.85, Math.max(0.1, start[i] + (ev.clientX - startX) / rowW));
+      const d = a - start[i];
+      setFracs((f) => {
+        const n = f.slice();
+        n[i] = start[i] + d;
+        n[i + 1] = start[i + 1] - d;
+        return n;
+      });
+    };
+    const onUp = (): void => {
+      window.removeEventListener('mousemove', onMove);
+      window.removeEventListener('mouseup', onUp);
+    };
+    window.addEventListener('mousemove', onMove);
+    window.addEventListener('mouseup', onUp);
+  };
+  // Auto-drop splits whose agent left the roster (archived/killed).
+  useEffect(() => {
+    const alive = splits.filter((sp) => agents.some((a) => a.id === sp.agentId));
+    if (alive.length !== splits.length) setSplits(alive);
+  }, [agents, splits, setSplits]);
   const appThemeNow = useAppTheme();
   const fullscreenFilePath = useStore(s => s.fullscreenFilePath);
   const sidebarWidth = useStore(s => s.sidebarWidth);
@@ -152,6 +187,7 @@ export function App() {
       // [personal] Split Agent Mode + editable display name.
       useStore.getState().setSplitAgentMode(c.splitAgentMode === true);
       useStore.getState().setAppName(c.appName?.trim() || 'Munder Difflin');
+      useStore.getState().setUiPortraits(c.uiPortraits === 'svg' ? 'svg' : 'pixel');
       // Mirror the active office theme so OfficeFloor renders it (gated on the
       // tvShowOffices flag; off = always the office). Settings keeps this synced.
       useStore.getState().setOfficeTheme(c.tvShowOffices ? (c.officeTheme ?? 'office') : 'office');
@@ -452,7 +488,15 @@ export function App() {
           const id = useStore.getState().draggingAgentId;
           if (!id) return;
           e.preventDefault();
-          setSplitView({ agentId: id, side: dropSide ?? 'right' });
+          const side = dropSide ?? 'right';
+          const cur = useStore.getState().splits;
+          // UNLIMITED by owner decision — every dropped agent gets its own pane
+          // (equal widths; the row and panes each keep a sane minimum width).
+          const next = cur.some((sp) => sp.agentId === id)
+            // already split — just move it to the dropped edge
+            ? cur.map((sp) => (sp.agentId === id ? { ...sp, side } : sp))
+            : [...cur, { agentId: id, side }];
+          setSplits(next);
           setDropSide(null);
           useStore.setState({ draggingAgentId: null });
         } : undefined}
@@ -501,16 +545,32 @@ export function App() {
           />
         )}
 
-        {/* [personal] Split Agent Mode: the command-center column row, with
-            the split terminal on the chosen edge of it. */}
-        <div style={{ flex: officeSceneOn ? '0 1 auto' : 1, minWidth: 0, minHeight: 0, display: 'flex', gap: 10 }}>
-        {splitAgent && splitAgentModeOn && splitView?.side === 'left' && (
-          <SplitAgentPanel agent={splitAgent} onClose={() => setSplitView(null)} />
-        )}
+        {/* [personal] Split Agent Mode row: [left splits] [main column] [right
+            splits]. With the office scene OFF every pane gets an EQUAL fraction
+            of the row (fracs state; equal on open/close) and the dividers
+            between panes are drag-to-resize handles. With the scene ON the
+            upstream fixed-width column stands and splits share the rest. */}
+        <div
+          ref={splitRowRef}
+          style={{ flex: officeSceneOn ? '0 1 auto' : 1, minWidth: 0, minHeight: 0, display: 'flex', gap: 0 }}
+        >
+        {splitAgentModeOn && !officeSceneOn && lefts.map((sp, i) => {
+          const a = splitAgentById(sp.agentId);
+          if (!a) return null;
+          return (
+            <React.Fragment key={sp.agentId}>
+              {i > 0 && <PaneResizer onStart={startResize(i - 1)} />}
+              <div style={{ flex: `${fracs[i] ?? 1 / paneCount} 1 0`, minWidth: 0, minHeight: 0, display: 'flex' }}>
+                <SplitAgentPanel agent={a} onClose={() => setSplits(splits.filter((x) => x.agentId !== a.id))} />
+              </div>
+            </React.Fragment>
+          );
+        })}
+        {splitAgentModeOn && !officeSceneOn && lefts.length > 0 && <PaneResizer onStart={startResize(lefts.length - 1)} />}
         <div style={{
           ...(officeSceneOn
             ? { width: sidebarWidth, flexShrink: 0 }
-            : { flex: 1, minWidth: 0, position: 'relative' }),
+            : { flex: `${fracs[lefts.length] ?? 1 / paneCount} 1 0`, minWidth: 0, position: 'relative' }),
           minHeight: 0, display: 'flex', flexDirection: 'column'
         }}>
           {/* [personal] With the scene off, the floating memory panel anchors
@@ -555,18 +615,35 @@ export function App() {
             </PixelPanel>
           )}
         </div>
-        {splitAgent && splitAgentModeOn && splitView?.side === 'right' && (
-          <SplitAgentPanel agent={splitAgent} onClose={() => setSplitView(null)} />
-        )}
+        {splitAgentModeOn && !officeSceneOn && rights.length > 0 && <PaneResizer onStart={startResize(lefts.length)} />}
+        {splitAgentModeOn && !officeSceneOn && rights.map((sp, i) => {
+          const a = splitAgentById(sp.agentId);
+          if (!a) return null;
+          const paneIdx = lefts.length + 1 + i;
+          return (
+            <React.Fragment key={sp.agentId}>
+              {i > 0 && <PaneResizer onStart={startResize(paneIdx - 1)} />}
+              <div style={{ flex: `${fracs[paneIdx] ?? 1 / paneCount} 1 0`, minWidth: 0, minHeight: 0, display: 'flex' }}>
+                <SplitAgentPanel agent={a} onClose={() => setSplits(splits.filter((x) => x.agentId !== a.id))} />
+              </div>
+            </React.Fragment>
+          );
+        })}
+        {splitAgentModeOn && officeSceneOn && splits.map((sp) => {
+          const a = splitAgentById(sp.agentId);
+          return a ? <SplitAgentPanel key={a.id} agent={a} onClose={() => setSplits(splits.filter((x) => x.agentId !== a.id))} /> : null;
+        })}
         </div>
 
-        {/* [personal] Drop-zone preview: the tinted half + label showing where
-            the dragged agent's split will open ("shifting" as you move between
-            halves). */}
+        {/* [personal] Drop-zone preview: the tinted slice + label showing where
+            the dragged agent's split will open. Width = the EQUAL fraction the
+            new pane will actually get (1/(current panes + 1 new)) so the
+            preview matches the post-drop layout. */}
         {splitAgentModeOn && draggingAgentId && dropSide && (
           <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', zIndex: 50 }}>
             <div style={{
-              position: 'absolute', top: 0, bottom: 0, width: '50%',
+              position: 'absolute', top: 0, bottom: 0,
+              width: `${100 / (splits.length + 2)}%`,
               ...(dropSide === 'left' ? { left: 0 } : { right: 0 }),
               background: 'var(--cth-sky-light)',
               opacity: 0.75,
@@ -635,6 +712,27 @@ export function App() {
    at tab and card scale, where the pixel grid is the point. These three sit
    beside the OS traffic lights, which is the one place that identity reads as a
    blurry asset rather than a decision. */
+/* [personal] Drag-to-resize handle between adjacent split panes. Pure
+   affordance — the drag math lives in App's startResize. */
+function PaneResizer({ onStart }: { onStart: (e: React.MouseEvent) => void }) {
+  return (
+    <div
+      onMouseDown={onStart}
+      title="Drag to resize"
+      style={{
+        flex: '0 0 7px', width: 7, cursor: 'col-resize',
+        margin: '0 -2px', zIndex: 5, position: 'relative',
+        background: 'transparent'
+      }}
+    >
+      <div style={{
+        position: 'absolute', top: 0, bottom: 0, left: 3, width: 1,
+        background: 'var(--cth-ink-300)'
+      }} />
+    </div>
+  );
+}
+
 function Glyph({ children }: { children: React.ReactNode }) {
   return (
     <svg

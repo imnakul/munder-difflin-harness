@@ -275,11 +275,14 @@ interface State {
    *  hero, rail wordmark). */
   appName: string;
   setAppName: (name: string) => void;
-  /** [personal] Split view: the agent shown side-by-side with the main panel
-   *  and which edge it occupies. Null = no split. Set by the main-area drop
-   *  zone (App.tsx) while Split Agent Mode is on. */
-  splitView: { agentId: string; side: 'left' | 'right' } | null;
-  setSplitView: (v: { agentId: string; side: 'left' | 'right' } | null) => void;
+  /** [personal] Mirror of config.uiPortraits — SpritePortrait reads it. */
+  uiPortraits: 'pixel' | 'svg';
+  setUiPortraits: (mode: 'pixel' | 'svg') => void;
+  /** [personal] Split view: up to MAX_SPLITS agents shown side-by-side with
+   *  the main panel, each pinned to an edge. Set by the main-area drop zone
+   *  (App.tsx) while Split Agent Mode is on. */
+  splits: { agentId: string; side: 'left' | 'right' }[];
+  setSplits: (v: { agentId: string; side: 'left' | 'right' }[]) => void;
   /** [personal] The agent card currently being dragged from the bottom strip
    *  (published by AgentStrip's existing HTML5 drag; cleared on drop/end).
    *  The main-area drop zone reads it to offer the split. */
@@ -805,8 +808,10 @@ export const useStore = create<State>((set) => ({
   setSplitAgentMode: (on) => set({ splitAgentMode: on }),
   appName: 'Munder Difflin',
   setAppName: (name) => set({ appName: name }),
-  splitView: null,
-  setSplitView: (v) => set({ splitView: v }),
+  uiPortraits: 'pixel',
+  setUiPortraits: (mode) => set({ uiPortraits: mode }),
+  splits: [],
+  setSplits: (v) => set({ splits: v }),
   draggingAgentId: null,
   officeTheme: 'office',
   setOfficeTheme: (theme) => set({ officeTheme: theme }),

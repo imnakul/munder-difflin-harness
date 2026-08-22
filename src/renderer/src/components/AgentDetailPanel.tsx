@@ -33,7 +33,7 @@ export function AgentDetailPanel({ agent }: AgentDetailPanelProps) {
   // [personal] rail mode hides the header IDE button (the SideRail hosts it)
   const railNav = useStore(s => s.sidebarNav);
   // [personal] while the split panel shows this agent's pty, hand it over
-  const isSplitHere = useStore(s => (s.splitView?.agentId ?? null) === agent.id);
+  const isSplitHere = useStore(s => s.splits.some((sp) => sp.agentId === agent.id));
   const isReal = !!agent.ptyId;
   // While this agent is shown in the fullscreen overlay, the fullscreen view
   // owns the pty (it sizes it to fill the screen). Keeping the embedded terminal

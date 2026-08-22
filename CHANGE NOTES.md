@@ -141,6 +141,7 @@ toggle applies LIVE (no restart).
 | `uiAnimations` | `boolean` | `true` | none | motion layer |
 | `splitAgentMode` | `boolean` | `false` | none | drag-to-split agent view |
 | `appName` | `string` | `'Munder Difflin'` | fixed | editable display name |
+| `uiPortraits` | `pixel`/`svg` | `pixel` | pixel | agent avatar pack |
 
 ### 4.1 `officeScene` — pixel office scene removal + full-width layout
 
@@ -268,7 +269,31 @@ toggle applies LIVE (no restart).
 - **One-PTY guard** [personal]: while the split shows agent X, X's own detail
   panel / the god Command Center shows a placeholder instead (same rule as
   fullscreen mode): `AgentDetailPanel.tsx` (`isSplitHere` → EmptyTab) and
-  `CommandCenterPanel.tsx` (`splitAgentId === agent.id` → Centered).
+  `CommandCenterPanel.tsx` (`splits.some(...)` → Centered).
+- **UNLIMITED splits** (owner decision — an earlier 3-cap was removed; every
+  dropped agent gets its own pane at 1/N width). Store field is `splits:
+  SplitSlot[]`. Pane widths live in App as `fracs` (equal on open/close,
+  adjustable via `PaneResizer` drag handles between panes, 10–85% clamp).
+  Dropping an ALREADY-SPLIT agent moves it to the dropped edge.
+- **Drag handle**: SplitAgentPanel's swap button is replaced by a `drag`-icon
+  handle (`IconName: 'drag'`, pixel six-dot grip / HugeIcons Drag02Icon).
+  Hold-drag it; the main-area drop zone re-pins that agent's split to the
+  dropped half (same path as opening a split).
+- Terminal zoom pills (−/px/+ in PtyTerminalView) got the `cth-pill` class →
+  rounded modern look when `uiTheme='modern'`.
+
+### 4.8b `uiPortraits` — SVG avatar pack (drop-in)
+
+- **New file** `src/renderer/src/components/portraitPack.ts` — globs
+  `src/renderer/src/assets/avatars/*.svg` (eager, ?url) and picks a STABLE
+  avatar per character (hash). Empty folder → null → SpritePortrait falls
+  back to the upstream pixel canvas, no error.
+- `SpritePortrait.tsx` [personal]: `svg` mode renders the picked `<img>`
+  instead of painting the canvas busts.
+- **Drop your SVG collection into
+  `src/renderer/src/assets/avatars/`** (owner's pack: ~116 files), then
+  Settings → New Look → Portraits → `svg`. Adding/removing files reshuffles
+  picks (hash) — expected while curating.
 
 ### 4.8 `appName` — editable display name
 

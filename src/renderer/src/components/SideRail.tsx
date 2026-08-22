@@ -141,7 +141,10 @@ function RailSwitch({ options, value, onChange }: {
         className="cth-switch-thumb"
         style={{
           position: 'absolute', top: 2, bottom: 2, left: 2,
-          width: `calc(${100 / options.length}% - 4px)`,
+          // (100% - 4px)/N with left:2 lands the thumb 2px from BOTH edges at
+          // every index — the earlier calc(50% - 4px) left extra space at the
+          // right end.
+          width: `calc((100% - 4px) / ${options.length})`,
           transform: `translateX(${idx * 100}%)`,
           background: 'var(--cth-cream-200)',
           boxShadow: 'inset 0 0 0 1px var(--cth-ink-100)',

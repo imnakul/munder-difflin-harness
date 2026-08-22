@@ -458,10 +458,21 @@ export function SettingsModal({ config, onClose, initialSection }: SettingsModal
     try {
       await window.cth.updateConfig({ splitAgentMode: next } as Partial<HarnessConfig>);
       useStore.getState().setSplitAgentMode(next);
-      if (!next) useStore.getState().setSplitView(null);
+      if (!next) useStore.getState().setSplits([]);
     } catch { setSplitModeLocal(!next); }
   };
   const [uiIcons, setUiIconsLocal] = useState<'pixel' | 'huge'>(useStore.getState().uiIcons);
+  // [personal] Portraits — pixel busts vs the drop-in SVG pack.
+  const [uiPortraits, setUiPortraitsLocal] = useState<'pixel' | 'svg'>(useStore.getState().uiPortraits);
+  const chooseUiPortraits = async (mode: 'pixel' | 'svg') => {
+    if (mode === uiPortraits) return;
+    const prev = uiPortraits;
+    setUiPortraitsLocal(mode);
+    try {
+      await window.cth.updateConfig({ uiPortraits: mode } as Partial<HarnessConfig>);
+      useStore.getState().setUiPortraits(mode);
+    } catch { setUiPortraitsLocal(prev); }
+  };
   const chooseUiIcons = async (mode: 'pixel' | 'huge') => {
     if (mode === uiIcons) return;
     const prev = uiIcons;
@@ -1310,6 +1321,35 @@ export function SettingsModal({ config, onClose, initialSection }: SettingsModal
                               onClick={() => void chooseUiIcons('huge')}
                             >
                               huge
+                            </PixelButton>
+                          </div>
+                        </div>
+                        <div style={{ height: 10 }} />
+                        {/* [personal] Portraits */}
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                            <span style={{ fontSize: 13, lineHeight: '20px', color: 'var(--cth-ink-900)' }}>
+                              Portraits
+                            </span>
+                            <span style={{ fontSize: 12, lineHeight: '16px', color: 'var(--cth-ink-500)' }}>
+                              Pixel keeps the drawn character busts; SVG uses the avatar pack dropped into
+                              src/renderer/src/assets/avatars/ (falls back to pixel if the folder is empty).
+                            </span>
+                          </div>
+                          <div style={{ display: 'flex', gap: 6, flexShrink: 0 }}>
+                            <PixelButton
+                              variant={uiPortraits === 'pixel' ? 'primary' : 'secondary'}
+                              size="sm"
+                              onClick={() => void chooseUiPortraits('pixel')}
+                            >
+                              pixel
+                            </PixelButton>
+                            <PixelButton
+                              variant={uiPortraits === 'svg' ? 'primary' : 'secondary'}
+                              size="sm"
+                              onClick={() => void chooseUiPortraits('svg')}
+                            >
+                              svg
                             </PixelButton>
                           </div>
                         </div>

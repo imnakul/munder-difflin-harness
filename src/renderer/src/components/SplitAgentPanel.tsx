@@ -24,18 +24,13 @@ export function SplitAgentPanel({ agent, onClose }: { agent: Agent; onClose: () 
   const updateAgent = useStore(s => s.updateAgent);
   const onPtyStream = usePtyParser(agent.id);
 
-  const swapSide = () => {
-    const sv = useStore.getState().splitView;
-    if (!sv || sv.agentId !== agent.id) return;
-    useStore.getState().setSplitView({ agentId: sv.agentId, side: sv.side === 'left' ? 'right' : 'left' });
-  };
 
   return (
     <PixelPanel
       variant="default"
       noPadding
       style={{
-        flex: '1 1 42%', minWidth: 320,
+        flex: '1 1 0', minWidth: 180,
         display: 'flex', flexDirection: 'column',
         height: '100%',
         overflow: 'hidden'
@@ -73,9 +68,29 @@ export function SplitAgentPanel({ agent, onClose }: { agent: Agent; onClose: () 
             }}>{agent.project}</span>
           </div>
         </div>
-        <PixelButton variant="secondary" size="sm" onClick={swapSide} title="Move this split to the other side">
-          <Icon name="sidebar" />
-        </PixelButton>
+        {/* [personal] DRAG HANDLE: hold and drag the panel — the main-area drop
+            zone re-pins this agent's split to whichever half you drop on (same
+            path as opening a split from the bottom strip). */}
+        <div
+          draggable
+          onDragStart={(e) => {
+            e.dataTransfer.effectAllowed = 'move';
+            useStore.setState({ draggingAgentId: agent.id });
+          }}
+          onDragEnd={() => { useStore.setState({ draggingAgentId: null }); }}
+          title="Hold and drag — drop on the left or right half to move this split there"
+          style={{
+            display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+            width: 28, height: 24, cursor: 'grab',
+            color: 'var(--cth-ink-700)',
+            background: 'var(--cth-cream-200)',
+            boxShadow: 'inset 0 0 0 1px var(--cth-ink-300)',
+            borderRadius: 6,
+            flexShrink: 0
+          }}
+        >
+          <Icon name="drag" />
+        </div>
         <PixelButton variant="destructive" size="sm" onClick={onClose} title="Close this split">
           <Icon name="x" />
         </PixelButton>

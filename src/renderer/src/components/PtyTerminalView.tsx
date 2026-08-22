@@ -383,17 +383,20 @@ export function PtyTerminalView({ ptyId, onStreamData, onUserPrompt, onToggleFul
               (top right) — more accessible, and the theme now darkens the whole
               app. Only the EXIT affordance stays here, in fullscreen. */}
           <button
+            className="cth-pill" /* [personal] modern-skin hook */
             onClick={() => zoom(-1)}
             disabled={fontSize <= MIN_FONT_SIZE}
             title="Zoom out (Cmd -)"
             style={zoomBtnStyle}
           >−</button>
           <button
+            className="cth-pill" /* [personal] modern-skin hook */
             onClick={resetZoom}
             title="Reset zoom (Cmd 0)"
-            style={{ ...zoomBtnStyle, width: 'auto', padding: '0 4px', minWidth: 28 }}
+            style={{ ...zoomBtnStyle, width: 'auto', padding: '0 6px', minWidth: 28 }}
           >{fontSize}px</button>
           <button
+            className="cth-pill" /* [personal] modern-skin hook */
             onClick={() => zoom(1)}
             disabled={fontSize >= MAX_FONT_SIZE}
             title="Zoom in (Cmd +)"

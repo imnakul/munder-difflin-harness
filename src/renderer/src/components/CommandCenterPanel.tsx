@@ -97,7 +97,7 @@ export function CommandCenterPanel({ agent, fullscreen = false }: { agent: Agent
   const railNav = useStore((s) => s.sidebarNav);
   // [personal] While the split panel shows THIS agent's pty, this panel hands
   // the terminal over (one pty, one live xterm).
-  const splitAgentId = useStore((s) => s.splitView?.agentId ?? null);
+  const splitAgentId = useStore((s) => (s.splits.some((sp) => sp.agentId === agent.id) ? agent.id : null));
   // The trigger-history ledger has nothing to say until an outside party can
   // reach us, so its tab appears only once an org key or a webhook exists. This
   // is the first config-gated tab in the panel: TABS stays the canonical order

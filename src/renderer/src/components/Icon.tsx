@@ -13,14 +13,14 @@ import {
   PauseIcon, PlayIcon, BellIcon, Folder01Icon, TerminalIcon, SourceCodeIcon,
   Globe02Icon, FlowConnectionIcon, SparklesIcon, Maximize02Icon, Minimize02Icon,
   Clock01Icon, AudioLinesIcon, NotebookIcon, InformationCircleIcon,
-  SidebarLeft01Icon, Image01Icon
+  SidebarLeft01Icon, Image01Icon, Drag02Icon
 } from '@hugeicons/core-free-icons';
 
 export type IconName =
   | 'gear' | 'plus' | 'x' | 'check' | 'arrow-right' | 'pause' | 'play'
   | 'bell' | 'folder' | 'terminal' | 'code' | 'web' | 'mcp' | 'sparkle'
   | 'expand' | 'minimize' | 'clock' | 'mic' | 'ledger' | 'info' | 'sidebar'
-  | 'image';
+  | 'image' | 'drag';
 
 interface IconDef {
   ink: string;     // primary color path d
@@ -138,6 +138,11 @@ const paths: Record<IconName, IconDef> = {
   sidebar: {
     accentColor: 'var(--cth-ink-300)',
     ink:   'M1 3h14v10H1z M2 4h12v8H2z M2 4h4v8H2z'
+  },
+  // [personal] six-dot grip — the split-pane drag handle.
+  drag: {
+    accentColor: 'var(--cth-ink-300)',
+    ink:   'M4 3h2v2H4zM8 3h2v2H8zM4 7h2v2H4zM8 7h2v2H8zM4 11h2v2H4zM8 11h2v2H8z'
   }
 };
 
@@ -173,7 +178,8 @@ const hugeIcons: Record<IconName, typeof Settings02Icon> = {
   ledger: NotebookIcon,
   info: InformationCircleIcon,
   sidebar: SidebarLeft01Icon,
-  image: Image01Icon
+  image: Image01Icon,
+  drag: Drag02Icon
 };
 
 export function Icon({ name, size = 1, style }: IconProps) {
