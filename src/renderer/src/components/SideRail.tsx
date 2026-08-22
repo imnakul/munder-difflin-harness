@@ -108,7 +108,7 @@ function RailButton({ title, icon, label, expanded, active = false, onClick }: R
       <span style={{ display: 'inline-flex', flexShrink: 0 }}>{icon}</span>
       {expanded && (
         <span className="cth-rail-label" style={{
-          fontSize: 13, lineHeight: '16px',
+          fontSize: 14.5, lineHeight: '19px',
           fontFamily: 'var(--cth-font-ui)',
           color: 'var(--cth-ink-900)'
         }}>
@@ -158,7 +158,7 @@ function RailSwitch({ options, value, onChange }: {
           style={{
             flex: 1, position: 'relative', zIndex: 1,
             background: 'transparent', border: 'none', cursor: 'pointer',
-            fontFamily: 'var(--cth-font-ui)', fontSize: 12, lineHeight: 1,
+            fontFamily: 'var(--cth-font-ui)', fontSize: 13, lineHeight: 1,
             fontWeight: o.key === value ? 600 : 500,
             color: o.key === value ? 'var(--cth-ink-900)' : 'var(--cth-ink-500)',
             whiteSpace: 'nowrap', overflow: 'hidden'

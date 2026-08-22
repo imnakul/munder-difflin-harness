@@ -61,17 +61,13 @@
 :root[data-uitheme='modern'] textarea { border-radius: 8px !important; }
 :root[data-uitheme='modern'] button   { border-radius: 8px !important; }
 
-/* Settings dialog — the settings body is dense with INLINE px font sizes
-   (nav labels are literally 8px, sized for the pixel face), which Jakarta
-   renders microscopically and inline styles beat every token override.
-   `zoom` scales the whole body uniformly — fonts, spacing, controls — without
-   touching a single inline style. Both panes already scroll (content pane:
-   overflowY auto; nav gets it below), so taller zoomed content just scrolls. */
-:root[data-uitheme='modern'] .cth-settings-body { zoom: 1.15; }
+/* Settings dialog — FIXED height (owner preference): the dialog is the same
+   size whether a section has little or lots of content; overflow scrolls
+   INSIDE the panes. Classic mode keeps upstream's auto-height behavior. */
+:root[data-uitheme='modern'] .cth-settings-shell { height: 82vh !important; }
+:root[data-uitheme='modern'] .cth-settings-shell > div { height: 100% !important; max-height: none !important; }
+:root[data-uitheme='modern'] .cth-settings-body { overflow-y: auto !important; }
 :root[data-uitheme='modern'] .cth-settings-body > div:first-child { overflow-y: auto; }
-/* Wider shell so the zoomed body has room (maxWidth 92vh clamp still guards
-   small windows; the 88vh + internal scroll behavior is unchanged). */
-:root[data-uitheme='modern'] .cth-settings-shell { width: 960px !important; }
 
 /* Type weight & tracking — the consistency pass. Normal 400-weight sans next
    to what the pixel chrome implied reads thin and uneven; modern UIs hold
