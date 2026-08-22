@@ -167,7 +167,10 @@ export function AgentCard({
       )}
       <PixelPanel
         variant="default"
-        style={{ height: '100%', padding: '6px 8px', ...godSurface }}
+        style={{ height: '100%', padding: '6px 8px',
+          // [personal] 3D mode: the accent tint moves from the portrait tile
+          // onto the CARD surface (the avatar floats free on it, no tile).
+          ...(is3d && !isGod ? { background: `var(--cth-${accent}-light)` } : godSurface) }}
         noPadding
       >
         <div style={{ display: 'flex', gap: 8, height: '100%' }}>
@@ -183,8 +186,10 @@ export function AgentCard({
             // God's CARD is now accent-light, so the tile cannot be — it would
             // vanish into its own background. Paper reads as an inset frame
             // against the tint, which is what the tile is meant to look like.
-            background: isGod ? 'var(--cth-paper-100)' : `var(--cth-${accent}-light)`,
-            boxShadow: `inset 0 0 0 1px var(--cth-ink-${isGod ? '300' : '100'})`,
+            // [personal] 3D: no tile at all — the avatar floats on the
+            // accent-tinted CARD surface (the tint moved onto the card).
+            background: is3d ? 'transparent' : (isGod ? 'var(--cth-paper-100)' : `var(--cth-${accent}-light)`),
+            boxShadow: is3d ? 'none' : `inset 0 0 0 1px var(--cth-ink-${isGod ? '300' : '100'})`,
             // Anchor the sprite's TOP: the 56px-tall portrait overflows this
             // tile, and bottom-anchoring cropped the head — crop feet, not face.
             display: 'flex',
