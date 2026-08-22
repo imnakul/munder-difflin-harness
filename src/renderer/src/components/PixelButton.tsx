@@ -81,7 +81,7 @@ export function PixelButton({
   return (
     <button
       title={title}
-      className="cth-btn" // [personal] class hook for the modern skin (modern.css)
+      className={`cth-btn cth-btn-${variant}`} // [personal] modern-skin hooks (modern.css)
       onClick={disabled ? undefined : onClick}
       onMouseDown={() => setPressed(true)}
       onMouseUp={() => setPressed(false)}

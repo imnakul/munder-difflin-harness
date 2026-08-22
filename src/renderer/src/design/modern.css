@@ -116,6 +116,20 @@
 /* [personal] SettingsSwitch — pill track beats the generic button radius. */
 :root[data-uitheme='modern'] .cth-settings-switch { border-radius: 999px !important; }
 
+/* [personal] Segmented pickers (modern) — the ACTIVE option reads as a light
+   selected segment in the rail/nav selection language, NOT a black-filled
+   primary ACTION button. Scoped to .cth-segmented groups only, so real
+   primary action buttons (save, confirm, add agent) keep their filled look. */
+:root[data-uitheme='modern'] .cth-segmented .cth-btn-primary:not(:disabled) {
+  background: var(--cth-cream-200) !important;
+  color: var(--cth-ink-900) !important;
+  box-shadow: inset 0 0 0 1.5px var(--cth-ink-500) !important;
+  font-weight: 600;
+}
+:root[data-uitheme='modern'] .cth-segmented .cth-btn {
+  transition: background-color 140ms ease-out, color 140ms ease-out, box-shadow 140ms ease-out;
+}
+
 /* Type weight & tracking — the consistency pass. Normal 400-weight sans next
    to what the pixel chrome implied reads thin and uneven; modern UIs hold
    500-600 across controls. Letter-spacing on the (uppercase) display labels

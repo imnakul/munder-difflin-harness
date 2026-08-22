@@ -1197,7 +1197,7 @@ export function SettingsModal({ config, onClose, initialSection }: SettingsModal
                               face; Jakarta is a clean modern sans. Terminals always stay mono.
                             </span>
                           </div>
-                          <div style={{ display: 'flex', gap: 6, flexShrink: 0 }}>
+                          <div className="cth-segmented" /* [personal] modern-skin picker group */ style={{ display: 'flex', gap: 6, flexShrink: 0 }}>
                             <PixelButton
                               variant={uiFont === 'pixel' ? 'primary' : 'secondary'}
                               size="sm"
@@ -1227,7 +1227,7 @@ export function SettingsModal({ config, onClose, initialSection }: SettingsModal
                               Pairs well with the Jakarta font.
                             </span>
                           </div>
-                          <div style={{ display: 'flex', gap: 6, flexShrink: 0 }}>
+                          <div className="cth-segmented" /* [personal] modern-skin picker group */ style={{ display: 'flex', gap: 6, flexShrink: 0 }}>
                             <PixelButton
                               variant={uiTheme === 'classic' ? 'primary' : 'secondary'}
                               size="sm"
@@ -1329,7 +1329,7 @@ export function SettingsModal({ config, onClose, initialSection }: SettingsModal
                               stroke icon pack.
                             </span>
                           </div>
-                          <div style={{ display: 'flex', gap: 6, flexShrink: 0 }}>
+                          <div className="cth-segmented" /* [personal] modern-skin picker group */ style={{ display: 'flex', gap: 6, flexShrink: 0 }}>
                             <PixelButton
                               variant={uiIcons === 'pixel' ? 'primary' : 'secondary'}
                               size="sm"
@@ -1359,7 +1359,7 @@ export function SettingsModal({ config, onClose, initialSection }: SettingsModal
                               to pixel if the folder is empty).
                             </span>
                           </div>
-                          <div style={{ display: 'flex', gap: 6, flexShrink: 0 }}>
+                          <div className="cth-segmented" /* [personal] modern-skin picker group */ style={{ display: 'flex', gap: 6, flexShrink: 0 }}>
                             <PixelButton
                               variant={uiPortraits === 'pixel' ? 'primary' : 'secondary'}
                               size="sm"
