@@ -944,8 +944,11 @@ export function SettingsModal({ config, onClose, initialSection }: SettingsModal
                           background: active ? 'var(--cth-ink-900)' : 'transparent',
                           color: active ? 'var(--cth-cream-50)' : 'var(--cth-ink-700)',
                           fontFamily: 'var(--cth-font-display)',
-                          fontSize: 8,
-                          lineHeight: '12px',
+                          // [personal] display tokens, not literal 8px: pixel
+                          // mode renders the same 8/12 as upstream; jakarta
+                          // mode scales to a readable 11/15 (tokens.css).
+                          fontSize: 'var(--cth-text-display-sm)',
+                          lineHeight: 'var(--cth-lh-display-sm)',
                           cursor: 'pointer',
                           letterSpacing: 0
                         }}
