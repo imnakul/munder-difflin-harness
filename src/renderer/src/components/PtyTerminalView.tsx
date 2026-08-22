@@ -12,6 +12,7 @@ import {
   useTerminalFontSize
 } from './terminalFontSize';
 import { useAppTheme } from '@/design/theme';
+import { useStore } from '@/store/store';
 
 // Zoom lives in ./terminalFontSize so anything outside the terminal (the message
 // composer) can scale with it too; these aliases keep the call sites below short.
@@ -23,6 +24,47 @@ const MAX_FONT_SIZE = MAX_TERMINAL_FONT_SIZE;
 // the title bar) instead of keeping its own light/dark switch — one theme for
 // chrome, terminal, and (via config.terminalTheme) each agent's TUI palette.
 type PtyTheme = 'light' | 'dark';
+
+// [personal] Named color themes (Settings -> Appearance): when a preset is
+// active (modern + non-default), the xterm palette is built from the LIVE CSS
+// tokens instead of the two fixed light/dark tables — xterm needs literal
+// colors, but getComputedStyle resolves our vars (incl. color-mix tints), so
+// terminals follow the chosen theme the moment it changes.
+function namedPaletteActive(): boolean {
+  const s = useStore.getState();
+  return s.uiTheme === 'modern' && !!s.uiThemePreset && s.uiThemePreset !== 'default';
+}
+function paletteFromTokens(): typeof THEMES.light {
+  const cs = getComputedStyle(document.documentElement);
+  const v = (name: string): string => cs.getPropertyValue(name).trim();
+  return {
+    background: v('--cth-paper-100'),
+    foreground: v('--cth-ink-900'),
+    cursor: v('--cth-ink-500'),
+    cursorAccent: v('--cth-cream-50'),
+    selectionBackground: v('--cth-sky-light'),
+    selectionForeground: v('--cth-ink-900'),
+    black: v('--cth-cream-50'),
+    red: v('--cth-coral'),
+    green: v('--cth-mint'),
+    yellow: v('--cth-lemon'),
+    blue: v('--cth-sky'),
+    magenta: v('--cth-lilac'),
+    cyan: v('--cth-sky'),
+    white: v('--cth-ink-700'),
+    brightBlack: v('--cth-ink-500'),
+    brightRed: v('--cth-coral'),
+    brightGreen: v('--cth-mint'),
+    brightYellow: v('--cth-lemon'),
+    brightBlue: v('--cth-sky'),
+    brightMagenta: v('--cth-lilac'),
+    brightCyan: v('--cth-mint'),
+    brightWhite: v('--cth-ink-900')
+  };
+}
+function effectivePtyTheme(appTheme: PtyTheme): typeof THEMES.light {
+  return namedPaletteActive() ? paletteFromTokens() : THEMES[appTheme];
+}
 
 const zoomBtnStyle: CSSProperties = {
   width: 18,
@@ -143,8 +185,9 @@ export function PtyTerminalView({ ptyId, onStreamData, onUserPrompt, onToggleFul
   useEffect(() => {
     const container = hostRef.current;
     if (!container) return;
-    const entry = acquireTerminal(ptyId, THEMES[ptyThemeRef.current], fontSizeRef.current);
-    entry.term.options.theme = THEMES[ptyThemeRef.current];
+    const pal = effectivePtyTheme(ptyThemeRef.current);
+    const entry = acquireTerminal(ptyId, pal, fontSizeRef.current);
+    entry.term.options.theme = pal;
     entry.term.options.fontSize = fontSizeRef.current;
     attachTerminal(entry, container);
     entry.onData = (chunk) => onStreamDataRef.current?.(chunk);
@@ -272,15 +315,26 @@ export function PtyTerminalView({ ptyId, onStreamData, onUserPrompt, onToggleFul
   }, [ptyId]);
 
   // Apply app-theme changes to the pooled terminal (persistence lives in
-  // design/theme.ts — the title-bar toggle owns it).
+  // design/theme.ts — the title-bar toggle owns it). [personal] Named theme
+  // presets re-apply here too, so switching themes repaints live terminals.
+  const themePresetNow = useStore(s => s.uiThemePreset);
+  const skinModernNow = useStore(s => s.uiTheme);
   useEffect(() => {
-    acquireTerminal(ptyId, THEMES[ptyTheme], fontSizeRef.current).term.options.theme = THEMES[ptyTheme];
-  }, [ptyTheme, ptyId]);
+    // rAF: child effects run BEFORE App stamps data-ctheme in ITS effect, so
+    // reading computed tokens synchronously serves the PREVIOUS theme. One
+    // frame later the attribute + style recalc are done and the tokens are
+    // the new theme's.
+    const raf = requestAnimationFrame(() => {
+      const pal = effectivePtyTheme(ptyTheme);
+      acquireTerminal(ptyId, pal, fontSizeRef.current).term.options.theme = pal;
+    });
+    return () => cancelAnimationFrame(raf);
+  }, [ptyTheme, ptyId, themePresetNow, skinModernNow]);
 
   // Apply font-size (zoom) changes to the pooled terminal and re-fit cols/rows.
   useEffect(() => {
     fontSizeRef.current = fontSize;
-    const entry = acquireTerminal(ptyId, THEMES[ptyThemeRef.current], fontSize);
+    const entry = acquireTerminal(ptyId, effectivePtyTheme(ptyThemeRef.current), fontSize);
     entry.term.options.fontSize = fontSize;
     try {
       entry.fit.fit();

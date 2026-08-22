@@ -308,6 +308,16 @@ toggle applies LIVE (no restart).
 
 ---
 
+### 4.10 Terminals follow named themes
+
+- `PtyTerminalView.tsx` [personal]: when a preset is active, the xterm palette
+  is built from the LIVE CSS tokens (`paletteFromTokens()` reads computed
+  styles — resolves vars incl. color-mix) instead of the fixed light/dark
+  tables; re-applied on preset/skin change. The re-apply is deferred one
+  rAF — child effects run before App stamps `data-ctheme`, so a synchronous
+  read served the PREVIOUS theme's colors (the "terminal stuck on the last
+  theme" bug).
+
 ### 4.9 `uiThemePreset` — named color themes (modern-only)
 
 - **New file** `src/renderer/src/design/themes.css` — one token block per
