@@ -936,6 +936,7 @@ export function SettingsModal({ config, onClose, initialSection }: SettingsModal
                       <button
                         key={section}
                         type="button"
+                        className={active ? 'cth-nav-active' : undefined} /* [personal] modern-skin selection */
                         onClick={() => setActiveSection(section)}
                         style={{
                           display: 'block', width: '100%', textAlign: 'left',
