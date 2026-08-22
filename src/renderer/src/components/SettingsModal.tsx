@@ -815,6 +815,7 @@ export function SettingsModal({ config, onClose, initialSection }: SettingsModal
       }}
     >
       <div
+        className="cth-settings-shell" /* [personal] modern-skin sizing hook */
         onClick={(e) => e.stopPropagation()}
         style={{
           width: 840, maxWidth: '92vw', maxHeight: '88vh',
@@ -830,7 +831,7 @@ export function SettingsModal({ config, onClose, initialSection }: SettingsModal
         >
           {/* === Change home sub-modal === */}
           {changeHome ? (
-            <div style={{ padding: 20, display: 'flex', flexDirection: 'column', gap: 16, overflowY: 'auto' }}>
+            <div className="cth-settings-body" style={{ padding: 20, display: 'flex', flexDirection: 'column', gap: 16, overflowY: 'auto' }}>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                 <span style={{ fontSize: 12, color: 'var(--cth-ink-500)' }}>New home folder</span>
                 <code style={{
@@ -887,7 +888,7 @@ export function SettingsModal({ config, onClose, initialSection }: SettingsModal
 
           /* === Reset confirmation screen === */
           ) : confirming ? (
-            <div style={{ padding: 20, display: 'flex', flexDirection: 'column', gap: 16 }}>
+            <div className="cth-settings-body" style={{ padding: 20, display: 'flex', flexDirection: 'column', gap: 16 }}>
               <div style={{ display: 'flex', gap: 12, alignItems: 'flex-start' }}>
                 <div style={{
                   width: 32, height: 32,
@@ -918,7 +919,7 @@ export function SettingsModal({ config, onClose, initialSection }: SettingsModal
           /* === Main two-pane settings layout === */
           ) : (
             <>
-              <div style={{ display: 'flex', flex: 1, overflow: 'hidden', minHeight: 0 }}>
+              <div className="cth-settings-body" /* [personal] modern-skin zoom hook */ style={{ display: 'flex', flex: 1, overflow: 'hidden', minHeight: 0 }}>
 
                 {/* Left nav */}
                 <div style={{
