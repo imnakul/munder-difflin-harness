@@ -345,7 +345,10 @@ toggle applies LIVE (no restart).
   rounded, obvious message box (Claude-Desktop look); all queue mechanics
   (held messages, status hints, attachments, busy queueing) are untouched.
   Classic skin / raw-terminal mode never see it — upstream rendering there
-  is byte-for-byte unchanged.
+  is byte-for-byte unchanged. The chat skin also renders a TUI-parity
+  shortcut hint line under the input (enter to send · shift+enter newline ·
+  drop files to attach · delivers-when-idle), mirroring what the raw Claude
+  Code TUI prints under its input box.
 
 ### 4.10 Terminals follow named themes
 

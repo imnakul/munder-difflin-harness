@@ -380,6 +380,21 @@ export function MessageQueueComposer({ agent, chatSkin = false }: MessageQueueCo
             </span>
           </PixelButton>
         </div>
+        {/* [personal] TUI-parity hint line (chat skin only) — the raw Claude
+            Code TUI shows its keybindings under the input box; the chat GUI
+            gets the same affordance so the input reads as THE place to type.
+            Upstream (classic / raw-terminal) rendering never sees this. */}
+        {chatSkin && (
+          <div style={{
+            display: 'flex', gap: 12, flexWrap: 'wrap',
+            fontSize: 11, lineHeight: '14px', color: 'var(--cth-ink-500)'
+          }}>
+            <span>enter to send</span>
+            <span>shift + enter for newline</span>
+            <span>drop files to attach</span>
+            <span>delivers when {agent.name} is idle</span>
+          </div>
+        )}
       </div>
     </div>
   );
