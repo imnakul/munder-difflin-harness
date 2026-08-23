@@ -185,7 +185,7 @@ export function AgentDetailPanel({ agent }: AgentDetailPanelProps) {
                  PTY stays available via the header's fullscreen button. */
               <div style={{ flex: 1, minWidth: 0, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
                 <AgentChatPanel agent={agent} />
-                <MessageQueueComposer agent={agent} />
+                <MessageQueueComposer agent={agent} chatSkin />
               </div>
             ) : (
             <div style={{ flex: 1, minWidth: 0, minHeight: 0, display: 'flex', flexDirection: 'column' }}>

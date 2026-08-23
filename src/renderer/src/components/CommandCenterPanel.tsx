@@ -326,7 +326,7 @@ export function CommandCenterPanel({ agent, fullscreen = false }: { agent: Agent
             /* [personal] chat interface over the session transcript */
             <div style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
               <AgentChatPanel agent={agent} onShowRaw={() => setForceRawTerminal(true)} />
-              <MessageQueueComposer agent={agent} />
+              <MessageQueueComposer agent={agent} chatSkin />
             </div>
           ) : agent.ptyId ? (
             <>

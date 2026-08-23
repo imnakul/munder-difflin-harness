@@ -20,6 +20,11 @@ interface Attachment {
 
 export interface MessageQueueComposerProps {
   agent: Agent;
+  /** [personal] Render with the chat-view input skin (rounded message box
+   *  instead of the utilitarian queue strip). Purely a class hook — the queue
+   *  mechanics are identical; modern.css carries the look, so classic stays
+   *  byte-for-byte upstream. */
+  chatSkin?: boolean;
 }
 
 /**
@@ -27,7 +32,7 @@ export interface MessageQueueComposerProps {
  * messages park in a per-agent queue and are submitted to the agent's Claude
  * TUI one-by-one as soon as it goes idle (see useHive's flush loop).
  */
-export function MessageQueueComposer({ agent }: MessageQueueComposerProps) {
+export function MessageQueueComposer({ agent, chatSkin = false }: MessageQueueComposerProps) {
   const queue = useStore((s) => s.messageQueues[agent.id]) ?? EMPTY_QUEUE;
   const enqueueMessage = useStore((s) => s.enqueueMessage);
   const removeQueuedMessage = useStore((s) => s.removeQueuedMessage);
@@ -174,6 +179,7 @@ export function MessageQueueComposer({ agent }: MessageQueueComposerProps) {
 
   return (
     <div
+      className={chatSkin ? 'cth-chat-composer' : undefined} // [personal]
       onDragOver={(e) => { e.preventDefault(); if (!dragOver) setDragOver(true); }}
       onDragLeave={(e) => {
         // Only clear when the cursor actually leaves the composer, not on child enter.

@@ -150,3 +150,64 @@
 :root[data-uitheme='modern'] .cth-btn { padding: 0 14px !important; }
 :root[data-uitheme='modern'] .cth-btn[style*="height: 24"],
 :root[data-uitheme='modern'] .cth-btn[style*="height:24"] { padding: 0 10px !important; }
+
+/* [personal] Scrollbars — a rectangular OS scrollbar is the loudest "not a
+   modern app" tell. Slim rounded thumb, transparent track, grows slightly on
+   hover; overlay-ish look without overlay scrollbars (xterm canvases sit
+   behind these too, but the xterm viewport's own scrollbar gets the same
+   treatment). Applies everywhere the app scrolls: settings body, chat list,
+   queues, kanban, trees. */
+:root[data-uitheme='modern'] ::-webkit-scrollbar { width: 10px; height: 10px; }
+:root[data-uitheme='modern'] ::-webkit-scrollbar-track { background: transparent; }
+:root[data-uitheme='modern'] ::-webkit-scrollbar-thumb {
+  background: var(--cth-ink-300);
+  border-radius: 999px;
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+:root[data-uitheme='modern'] ::-webkit-scrollbar-thumb:hover { background-color: var(--cth-ink-500); }
+:root[data-uitheme='modern'] ::-webkit-scrollbar-corner { background: transparent; }
+:root[data-uitheme='modern'] ::-webkit-scrollbar-button { display: none; }
+
+/* [personal] Chat-view composer skin (chatSkin prop on MessageQueueComposer,
+   set by the two agentChatView branches). In chat GUI mode the utilitarian
+   queue strip reads as a status bar, not an input — the box people look for
+   is a rounded message field. This turns the SAME textarea/queue mechanics
+   into that: one obvious rounded input with the control row under it. The
+   queue keeps working exactly as upstream (status hints, held messages,
+   attachments) — only the chrome changes. Classic skin + raw-terminal mode
+   never get this class, so upstream rendering is untouched there. */
+:root[data-uitheme='modern'] .cth-chat-composer {
+  padding: 10px 14px 12px;
+  gap: 8px;
+}
+:root[data-uitheme='modern'] .cth-chat-composer > div:first-child {
+  /* QUEUE header row — keep the mechanics readable but demote it to a caption
+     so the input below owns the bottom of the panel. */
+  opacity: 0.85;
+}
+:root[data-uitheme='modern'] .cth-chat-composer > div:first-child > span:first-child {
+  font-size: 10px !important;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+:root[data-uitheme='modern'] .cth-chat-composer textarea {
+  font-family: var(--cth-font-ui) !important;
+  font-size: 14px !important;
+  line-height: 20px !important;
+  height: 72px;
+  min-height: 72px !important;
+  max-height: 220px !important;
+  padding: 12px 14px !important;
+  border-radius: 12px !important;
+  background: var(--cth-paper-100) !important;
+  box-shadow: inset 0 0 0 1px var(--cth-ink-100) !important;
+  resize: none !important;
+  transition: box-shadow 140ms ease-out;
+}
+:root[data-uitheme='modern'] .cth-chat-composer textarea:focus {
+  box-shadow: inset 0 0 0 1.5px var(--cth-ink-500) !important;
+}
+:root[data-uitheme='modern'] .cth-chat-composer textarea::placeholder {
+  color: var(--cth-ink-300);
+}

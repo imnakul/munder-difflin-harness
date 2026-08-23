@@ -174,6 +174,11 @@ toggle applies LIVE (no restart).
   `.cth-badge` pill, inputs 8px — `!important` to beat inline styles);
   spacing scale one step airier (`--cth-space-3: 14px`, `--cth-space-4: 20px`);
   500-600 font weights + slight letter-spacing for consistency.
+  Also in modern.css: slim ROUNDED scrollbars app-wide
+  (`::-webkit-scrollbar` 10px, rounded thumb cut from the track, hover
+  deepen, transparent track/corner) — the rectangular OS scrollbar was the
+  loudest "not a modern app" tell; and the `cth-chat-composer` chat input
+  skin (see 4.11).
 - Class hooks added to the three shared primitives (one line each):
   `PixelPanel.tsx` → `cth-panel`, `PixelButton.tsx` → `cth-btn`,
   `PixelBadge.tsx` → `cth-badge`.
@@ -325,6 +330,18 @@ toggle applies LIVE (no restart).
 - Toggle: `agentChatView` (default OFF), Settings → Appearance → "Agent chat
   view". Wired in `AgentDetailPanel`'s terminal tab (chatView ternary);
   split panels + god Command Center keep raw terminals.
+- Follow-ups in the same gate: god Command Center terminal tab also gets the
+  chat view (with a "back to chat" bar when you open the raw terminal);
+  full markdown in bubbles via the app's hardened `MarkdownPreview`
+  (tables/code/bold), opt-in `math` prop adds KaTeX (`remark-math` +
+  `rehype-katex` — MathML-based, no raw HTML); consecutive assistant records
+  are merged so one reply isn't split into fragment bubbles.
+- **Chat composer skin:** `chatSkin` prop (set by both chat branches) adds a
+  `cth-chat-composer` class — modern.css only. The queue textarea becomes a
+  rounded, obvious message box (Claude-Desktop look); all queue mechanics
+  (held messages, status hints, attachments, busy queueing) are untouched.
+  Classic skin / raw-terminal mode never see it — upstream rendering there
+  is byte-for-byte unchanged.
 
 ### 4.10 Terminals follow named themes
 
