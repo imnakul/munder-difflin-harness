@@ -406,7 +406,21 @@ export function readSessionMessages(transcriptPath: string, limit = 200): ChatMe
         out.push({ role: 'assistant', text, tools: tools.length ? tools : undefined, ts });
       }
     }
-    return out.slice(-limit);
+    // Claude Code emits ONE assistant record per content block — a single
+    // logical response arrives as several consecutive records. Merge them into
+    // one message (text joined with a blank line, tools unioned in order) so
+    // the chat renders one flowing response instead of gappy fragments.
+    const merged: ChatMessage[] = [];
+    for (const m of out) {
+      const prev = merged[merged.length - 1];
+      if (m.role === 'assistant' && prev && prev.role === 'assistant') {
+        prev.text = prev.text ? prev.text + '\n\n' + m.text : m.text;
+        if (m.tools) prev.tools = [...(prev.tools ?? []), ...m.tools];
+      } else {
+        merged.push(m);
+      }
+    }
+    return merged.slice(-limit);
   } catch {
     return [];
   }

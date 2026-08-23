@@ -173,7 +173,7 @@ function Bubble({ m }: { m: ChatMsg }) {
           : /* [personal] full markdown: tables, code, lists — the app's
              hardened MarkdownPreview (no raw HTML, safe links). */
             <div className="cth-md-preview cth-md-chat">
-              <MarkdownPreview source={m.text} />
+              <MarkdownPreview source={m.text} math />
             </div>}
       </div>
       {m.tools && m.tools.length > 0 && (

@@ -23,6 +23,8 @@
 .cth-md-chat ul, .cth-md-chat ol { margin: 0.35em 0; }
 .cth-md-chat li { margin: 2px 0; }
 .cth-md-chat hr { margin: 0.9em 0; }
+.cth-md-chat .katex { font-size: 1.05em; }
+.cth-md-chat .katex-display { margin: 0.6em 0; overflow-x: auto; overflow-y: hidden; }
 
 *, *::before, *::after { box-sizing: border-box; }
 

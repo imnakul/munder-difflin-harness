@@ -15,6 +15,12 @@
 import { memo, useState } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+// [personal] math rendering (opt-in via the `math` prop; chat view uses it).
+// rehype-katex parses TeX into MathML/spans — NOT raw HTML, so the no-raw-HTML
+// security posture of this component is unchanged.
+import remarkMath from 'remark-math';
+import rehypeKatex from 'rehype-katex';
+import 'katex/dist/katex.min.css';
 import { useWorkspaceImage } from '@/hooks/useWorkspaceImage';
 import { isExternal, isRelativeMd, resolveLocalImageRel, resolveRel } from './mdLinks';
 
@@ -28,15 +34,19 @@ export interface MarkdownPreviewProps {
   root?: string;
   /** Open a sibling markdown file (repo-relative path) in the host's context. */
   onOpenMarkdownLink?: (rel: string) => void;
+  /** [personal] Render $...$ / $$...$$ math via KaTeX. Default off = the
+   *  upstream plugin set, unchanged. */
+  math?: boolean;
 }
 
 export const MarkdownPreview = memo(function MarkdownPreview({
-  source, baseRel, root, onOpenMarkdownLink
+  source, baseRel, root, onOpenMarkdownLink, math = false
 }: MarkdownPreviewProps) {
   return (
     <div className="cth-md-preview">
       <ReactMarkdown
-        remarkPlugins={[remarkGfm]}
+        remarkPlugins={math ? [remarkGfm, remarkMath] : [remarkGfm]}
+        rehypePlugins={math ? [rehypeKatex] : []}
         components={{
           a: ({ href, children }) => {
             const h = href ?? '';
