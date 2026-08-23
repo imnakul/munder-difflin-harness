@@ -330,6 +330,11 @@ export interface HarnessConfig {
    *  the drop-in pack in src/renderer/src/assets/avatars/ (stable per-character
    *  pick; empty folder falls back to pixel). */
   uiPortraits?: 'pixel' | 'svg';
+  /** [personal] Chat-style agent view: render each agent's session as a chat
+   *  interface (user/assistant messages + tool chips, read from the Claude
+   *  Code session transcript) instead of the raw PTY terminal. The raw
+   *  terminal stays one click away (fullscreen). Default OFF. */
+  agentChatView?: boolean;
   /** [personal] Color theme preset (only honored while uiTheme='modern'):
    *  'default' = the untinted modern skin; any other value selects a named
    *  editor palette (design/themes.css) — One Dark Pro, GitHub Dark/Light,
@@ -487,6 +492,7 @@ const DEFAULTS: HarnessConfig = {
   appName: 'Munder Difflin',
   uiPortraits: 'pixel',
   uiThemePreset: 'default',
+  agentChatView: false,
   tvShowOffices: false,
   officeTheme: 'office',
   slackEnabled: false,

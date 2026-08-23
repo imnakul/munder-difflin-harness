@@ -339,3 +339,75 @@ export function readContextTokens(transcriptPath: string): number | null {
     return null;
   }
 }
+
+// ─── [personal] Chat view: structured messages from a session transcript ────
+// The chat-style agent view reads Claude Code's OWN session JSONL (the same
+// file agentContext/usage read) instead of scraping the PTY's ANSI stream —
+// every user turn, assistant text block, and tool use is already structured
+// there. One pass, newest-last, capped; tool inputs are reduced to a short
+// human-readable brief (never dumped raw).
+export interface ChatToolUse { name: string; brief: string }
+export interface ChatMessage {
+  role: 'user' | 'assistant';
+  text: string;
+  tools?: ChatToolUse[];
+  ts?: number;
+}
+
+function toolBrief(name: string, input: unknown): string {
+  if (input && typeof input === 'object') {
+    const inp = input as Record<string, unknown>;
+    for (const key of ['command', 'file_path', 'path', 'pattern', 'url', 'query', 'description']) {
+      const v = inp[key];
+      if (typeof v === 'string' && v) return v.length > 120 ? v.slice(0, 117) + '...' : v;
+    }
+  }
+  return '';
+}
+
+export function readSessionMessages(transcriptPath: string, limit = 200): ChatMessage[] {
+  try {
+    const raw = readFileSync(transcriptPath, 'utf8');
+    const out: ChatMessage[] = [];
+    for (const line of raw.split('\n')) {
+      const trimmed = line.trim();
+      if (!trimmed) continue;
+      let rec: {
+        type?: string; subtype?: string; timestamp?: string; isMeta?: boolean;
+        message?: { role?: string; content?: unknown };
+      };
+      try { rec = JSON.parse(trimmed); } catch { continue; }
+      if (rec.isMeta) continue;
+      const ts = rec.timestamp ? Math.floor(Date.parse(rec.timestamp) / 1000) || undefined : undefined;
+      if (rec.type === 'user' && rec.message) {
+        const c = rec.message.content;
+        const text = typeof c === 'string'
+          ? c
+          : Array.isArray(c)
+            ? c.filter((b): b is { type: string; text?: string } =>
+                !!b && typeof b === 'object' && (b as { type?: string }).type === 'text')
+              .map((b) => b.text ?? '').join('\n')
+            : '';
+        const t = text.trim();
+        if (!t) continue;
+        // Skip the harness-injected context wrappers (hooks/queue delivery
+        // write into the session too) — keep only genuine-looking user turns.
+        if (t.startsWith('<') && t.endsWith('>')) continue;
+        out.push({ role: 'user', text: t, ts });
+      } else if (rec.type === 'assistant' && rec.message) {
+        const blocks = Array.isArray(rec.message.content)
+          ? (rec.message.content as { type?: string; text?: string; name?: string; input?: unknown }[])
+          : [];
+        const text = blocks.filter((b) => b.type === 'text').map((b) => b.text ?? '').join('\n').trim();
+        const tools: ChatToolUse[] = blocks
+          .filter((b) => b.type === 'tool_use' && typeof b.name === 'string')
+          .map((b) => ({ name: b.name as string, brief: toolBrief(b.name as string, b.input) }));
+        if (!text && tools.length === 0) continue;
+        out.push({ role: 'assistant', text, tools: tools.length ? tools : undefined, ts });
+      }
+    }
+    return out.slice(-limit);
+  } catch {
+    return [];
+  }
+}

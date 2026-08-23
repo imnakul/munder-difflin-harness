@@ -85,3 +85,7 @@
     transition-duration: 0.01ms !important;
   }
 }
+
+/* [personal] Chat view typing dots */
+@keyframes cth-chat-bounce { 0%, 60%, 100% { transform: translateY(0); opacity: .5; } 30% { transform: translateY(-3px); opacity: 1; } }
+:root[data-animations='on'] .cth-chat-dot { animation: cth-chat-bounce 900ms ease-in-out infinite; }

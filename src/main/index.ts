@@ -31,7 +31,7 @@ import { MemoryManager } from './memory';
 import { KnowledgeManager } from './knowledge';
 import { MemoryReflector, type ReflectSettings } from './reflect';
 import { PersistStore } from './db';
-import { readAgentUsage, readContextTokens, seedSessionTranscript, resolveSessionCwd } from './transcript';
+import { readAgentUsage, readContextTokens, seedSessionTranscript, resolveSessionCwd, readSessionMessages } from './transcript';
 import { listIssues, listCIRuns } from './github';
 import { SlackWebhookServer, SlackReplyServer, postSlackReply, type SlackEventFile } from './slack';
 import {
@@ -2805,6 +2805,14 @@ ipcMain.handle('pty:list', () => ptyManager.list());
 // Resolve a pasted Claude session id to the cwd it originally ran in, so the Add
 // Agent dialog can auto-fill the folder for a resume (#2 zero-step resume). Reads
 // the cwd from a transcript record; null when the id is invalid/unknown.
+// [personal] Chat view: structured messages for an agent's LIVE session (the
+// transcript path is learned from the agent's hooks, same as agentContext).
+ipcMain.handle('transcript:messages', (_evt, agentId: unknown, limit: unknown) => {
+  if (typeof agentId !== 'string') return null;
+  const tp = hookServer.transcriptPath(agentId);
+  if (!tp) return null;
+  return readSessionMessages(tp, typeof limit === 'number' && limit > 0 ? Math.min(limit, 500) : 200);
+});
 ipcMain.handle('session:resolveCwd', (_evt, sessionId: unknown) =>
   (typeof sessionId === 'string' ? resolveSessionCwd(sessionId) : null));
 

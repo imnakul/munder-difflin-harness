@@ -308,6 +308,24 @@ toggle applies LIVE (no restart).
 
 ---
 
+### 4.11 `agentChatView` — chat-style agent interface (GUI over the session)
+
+- **New file** `src/renderer/src/components/AgentChatPanel.tsx` — each agent's
+  session rendered as a CHAT (Claude-Desktop-style): user/assistant message
+  bubbles, tool calls as compact chips, animated working… dots, smart
+  bottom-pinning, and the existing MessageQueueComposer for input. A "raw
+  terminal" button opens the live PTY fullscreen — the terminal is never far.
+- **Data source:** Claude Code's OWN session JSONL transcript (NOT ANSI/PTY
+  scraping — every turn is already structured there). [personal] additions:
+  `readSessionMessages()` in `src/main/transcript.ts`, IPC
+  `transcript:messages` (uses `hookServer.transcriptPath(agentId)`, same
+  source as agentContext), preload `transcriptMessages()`. Polls every 2s +
+  refetch on status change. Null transcript (hooks not fired / non-Claude
+  provider) = honest empty state + escape hatch.
+- Toggle: `agentChatView` (default OFF), Settings → Appearance → "Agent chat
+  view". Wired in `AgentDetailPanel`'s terminal tab (chatView ternary);
+  split panels + god Command Center keep raw terminals.
+
 ### 4.10 Terminals follow named themes
 
 - `PtyTerminalView.tsx` [personal]: when a preset is active, the xterm palette

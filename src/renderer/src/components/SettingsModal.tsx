@@ -465,6 +465,16 @@ export function SettingsModal({ config, onClose, initialSection }: SettingsModal
   // [personal] Split Agent Mode — drag an agent card into the main area to
   // open it side-by-side.
   const [splitModeOn, setSplitModeLocal] = useState<boolean>(useStore.getState().splitAgentMode);
+  // [personal] Chat-style agent view
+  const [chatViewOn, setChatViewLocal] = useState<boolean>(useStore.getState().agentChatView);
+  const toggleChatView = async () => {
+    const next = !chatViewOn;
+    setChatViewLocal(next);
+    try {
+      await window.cth.updateConfig({ agentChatView: next } as Partial<HarnessConfig>);
+      useStore.getState().setAgentChatView(next);
+    } catch { setChatViewLocal(!next); }
+  };
   const toggleSplitMode = async () => {
     const next = !splitModeOn;
     setSplitModeLocal(next);
@@ -1338,6 +1348,31 @@ export function SettingsModal({ config, onClose, initialSection }: SettingsModal
                             {splitModeOn ? 'on' : 'off'}
                           </PixelButton>
                             )}
+                        <div style={{ height: 10 }} />
+                        {/* [personal] Chat-style agent view */}
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                            <span style={{ fontSize: 13, lineHeight: '20px', color: 'var(--cth-ink-900)' }}>
+                              Agent chat view
+                            </span>
+                            <span style={{ fontSize: 12, lineHeight: '16px', color: 'var(--cth-ink-500)' }}>
+                              Show each agent's session as a chat interface (messages + tool activity, read
+                              from its session transcript) instead of the raw terminal. The raw terminal
+                              stays one click away.
+                            </span>
+                          </div>
+                          {uiTheme === 'modern'
+                            ? <SettingsSwitch on={chatViewOn} onChange={toggleChatView} />
+                            : (
+                          <PixelButton
+                            variant={chatViewOn ? 'primary' : 'secondary'}
+                            size="sm"
+                            onClick={toggleChatView}
+                          >
+                            {chatViewOn ? 'on' : 'off'}
+                          </PixelButton>
+                            )}
+                        </div>
                         </div>
                         <div style={{ height: 10 }} />
                         {/* [personal] Motion layer */}

@@ -194,6 +194,7 @@ export function App() {
       useStore.getState().setAppName(c.appName?.trim() || 'Munder Difflin');
       useStore.getState().setUiPortraits(c.uiPortraits === 'svg' ? 'svg' : 'pixel');
       useStore.getState().setUiThemePreset(c.uiThemePreset?.trim() || 'default');
+      useStore.getState().setAgentChatView(c.agentChatView === true);
       // Mirror the active office theme so OfficeFloor renders it (gated on the
       // tvShowOffices flag; off = always the office). Settings keeps this synced.
       useStore.getState().setOfficeTheme(c.tvShowOffices ? (c.officeTheme ?? 'office') : 'office');

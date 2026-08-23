@@ -1,0 +1,184 @@
+/**
+ * [personal] AgentChatPanel — a chat-style interface over an agent's session,
+ * like Claude Desktop / ZCode: user and assistant MESSAGES as bubbles, tool
+ * calls as compact chips, a live "working…" indicator, and the existing
+ * MessageQueueComposer for input. The raw PTY terminal stays one click away
+ * (the fullscreen button in this header, or the Appearance toggle).
+ *
+ * DATA SOURCE (why this is not fragile): it does NOT scrape the PTY's ANSI
+ * stream — it reads Claude Code's own session JSONL transcript (the same
+ * source agentContext/usage read), where every user turn, assistant text
+ * block and tool use is already structured. Polled (2s) + refetched on agent
+ * status changes; null transcript (hooks not fired yet / non-Claude agent)
+ * renders an honest empty state with the raw-terminal escape hatch.
+ */
+import { useEffect, useRef, useState } from 'react';
+import { useStore, type Agent } from '@/store/store';
+import { PixelButton } from './PixelButton';
+import { Icon } from './Icon';
+import { SpritePortrait } from './SpritePortrait';
+
+interface ChatToolUse { name: string; brief: string }
+interface ChatMsg {
+  role: 'user' | 'assistant';
+  text: string;
+  tools?: ChatToolUse[];
+  ts?: number;
+}
+
+const POLL_MS = 2000;
+
+export function AgentChatPanel({ agent }: { agent: Agent }) {
+  const [msgs, setMsgs] = useState<ChatMsg[] | null>(null);
+  const [noTranscript, setNoTranscript] = useState(false);
+  const status = useStore((s) => s.agents.find((a) => a.id === agent.id)?.status ?? 'idle');
+  const setFullscreen = useStore((s) => s.setFullscreen);
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const pinnedRef = useRef(true);
+
+  const load = async (): Promise<void> => {
+    try {
+      const res = await window.cth.transcriptMessages(agent.id, 200);
+      if (res === null) { setNoTranscript(true); return; }
+      setNoTranscript(false);
+      setMsgs(res);
+    } catch { /* transient */ }
+  };
+
+  useEffect(() => {
+    void load();
+    const t = setInterval(() => { void load(); }, POLL_MS);
+    return () => clearInterval(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [agent.id]);
+
+  // Refetch the moment activity state changes (a turn just started/ended).
+  useEffect(() => { void load(); }, [status]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Keep pinned to bottom while the user is at the bottom (reading older
+  // history shouldn't be yanked down by new messages).
+  useEffect(() => {
+    const el = scrollRef.current;
+    if (el && pinnedRef.current) el.scrollTop = el.scrollHeight;
+  }, [msgs]);
+
+  const onScroll = (): void => {
+    const el = scrollRef.current;
+    if (!el) return;
+    pinnedRef.current = el.scrollHeight - el.scrollTop - el.clientHeight < 40;
+  };
+
+  const working = status === 'thinking' || status === 'working' || status === 'compacting';
+
+  return (
+    <div style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+      {/* Header */}
+      <div style={{
+        display: 'flex', alignItems: 'center', gap: 8,
+        padding: '6px 10px', flexShrink: 0,
+        borderBottom: '1px solid var(--cth-ink-100)',
+        background: 'var(--cth-cream-100)'
+      }}>
+        <SpritePortrait character={agent.character} scale={1} />
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--cth-ink-900)' }}>{agent.name}</span>
+          <span style={{ fontSize: 12, color: 'var(--cth-ink-500)', marginLeft: 8 }}>
+            {noTranscript ? 'no session transcript yet' : `${msgs?.length ?? 0} messages`}
+          </span>
+        </div>
+        <PixelButton
+          variant="secondary"
+          size="sm"
+          onClick={() => setFullscreen(agent.id)}
+          title="Open the raw terminal in fullscreen"
+        >
+          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+            <Icon name="terminal" /> raw terminal
+          </span>
+        </PixelButton>
+      </div>
+
+      {/* Messages */}
+      <div
+        ref={scrollRef}
+        onScroll={onScroll}
+        style={{
+          flex: 1, minHeight: 0, overflowY: 'auto',
+          padding: '14px 14px 8px',
+          background: 'var(--cth-paper-200)',
+          display: 'flex', flexDirection: 'column', gap: 10
+        }}
+      >
+        {noTranscript && (
+          <div style={{ margin: 'auto', maxWidth: 320, textAlign: 'center', display: 'flex', flexDirection: 'column', gap: 10, alignItems: 'center' }}>
+            <Icon name="info" />
+            <p style={{ margin: 0, fontSize: 13, lineHeight: '19px', color: 'var(--cth-ink-700)' }}>
+              No session transcript yet — it appears once the agent's hooks fire
+              (usually seconds after it starts working). The raw terminal has
+              everything in the meantime.
+            </p>
+          </div>
+        )}
+        {msgs?.map((m, i) => <Bubble key={i} m={m} />)}
+        {working && (
+          <div style={{ display: 'flex', gap: 4, alignItems: 'center', padding: '2px 6px' }}>
+            <span className="cth-chat-dot" style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--cth-ink-500)' }} />
+            <span className="cth-chat-dot" style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--cth-ink-500)', animationDelay: '200ms' }} />
+            <span className="cth-chat-dot" style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--cth-ink-500)', animationDelay: '400ms' }} />
+            <span style={{ fontSize: 12, color: 'var(--cth-ink-500)', marginLeft: 4 }}>
+              {status === 'compacting' ? 'compacting context…' : 'working…'}
+            </span>
+          </div>
+        )}
+        {!working && msgs && msgs.length === 0 && !noTranscript && (
+          <div style={{ margin: 'auto', fontSize: 13, color: 'var(--cth-ink-500)' }}>
+            Session started — messages will appear here.
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function Bubble({ m }: { m: ChatMsg }) {
+  const isUser = m.role === 'user';
+  return (
+    <div style={{
+      display: 'flex', flexDirection: 'column',
+      alignItems: isUser ? 'flex-end' : 'flex-start',
+      maxWidth: '86%'
+    }}>
+      <div style={{
+        padding: '8px 12px',
+        background: isUser ? 'var(--cth-sky-light)' : 'var(--cth-cream-100)',
+        boxShadow: 'inset 0 0 0 1px var(--cth-ink-100)',
+        borderRadius: 12,
+        borderBottomRightRadius: isUser ? 4 : 12,
+        borderBottomLeftRadius: isUser ? 12 : 4,
+        fontSize: 13.5, lineHeight: '20px',
+        color: 'var(--cth-ink-900)',
+        whiteSpace: 'pre-wrap', wordBreak: 'break-word'
+      }}>
+        {m.text}
+      </div>
+      {m.tools && m.tools.length > 0 && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 3, marginTop: 4, width: '100%' }}>
+          {m.tools.map((t, i) => (
+            <div key={i} style={{
+              display: 'flex', alignItems: 'center', gap: 6,
+              padding: '3px 8px',
+              background: 'var(--cth-cream-200)',
+              boxShadow: 'inset 0 0 0 1px var(--cth-ink-100)',
+              borderRadius: 6,
+              fontSize: 12, color: 'var(--cth-ink-700)',
+              whiteSpace: 'nowrap', overflow: 'hidden'
+            }}>
+              <span style={{ flexShrink: 0, color: 'var(--cth-mint)', fontWeight: 600 }}>{t.name}</span>
+              {t.brief && <span style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>{t.brief}</span>}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}

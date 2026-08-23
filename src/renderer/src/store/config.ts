@@ -134,6 +134,8 @@ export interface HarnessConfig {
   uiPortraits?: 'pixel' | 'svg';
   /** [personal] Color theme preset id; mirrors main. */
   uiThemePreset?: string;
+  /** [personal] Chat-style agent view on/off; mirrors main. */
+  agentChatView?: boolean;
   /** TV-show office themes feature flag (Settings picker + switch flow). Default OFF. */
   tvShowOffices?: boolean;
   /** Active office map/cast theme (honored only when tvShowOffices is on). */

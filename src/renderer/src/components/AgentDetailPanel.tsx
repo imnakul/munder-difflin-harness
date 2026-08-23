@@ -7,6 +7,7 @@ import { PtyTerminalView } from './PtyTerminalView';
 import { terminalInstanceKey } from './terminalRecovery';
 import { MessageQueueComposer } from './MessageQueueComposer';
 import { CommandCenterPanel } from './CommandCenterPanel';
+import { AgentChatPanel } from './AgentChatPanel'; // [personal]
 import { disposeTerminal } from './terminalPool';
 import { SidebarTabs } from './SidebarTabs';
 import { ThreadsPanel } from './ThreadsPanel';
@@ -36,6 +37,8 @@ export function AgentDetailPanel({ agent }: AgentDetailPanelProps) {
   const isSplitHere = useStore(s => s.splits.some((sp) => sp.agentId === agent.id));
   // [personal] 3D avatars render best in a bigger, centered box
   const is3d = useStore(s => s.uiPortraits === 'svg');
+  // [personal] chat-style agent view (Settings → Appearance)
+  const chatView = useStore(s => s.agentChatView);
   const isReal = !!agent.ptyId;
   // While this agent is shown in the fullscreen overlay, the fullscreen view
   // owns the pty (it sizes it to fill the screen). Keeping the embedded terminal
@@ -177,6 +180,14 @@ export function AgentDetailPanel({ agent }: AgentDetailPanelProps) {
                 This terminal is open in the split panel. Close the split to bring it back here.
               </EmptyTab>
             ) : (
+            chatView ? (
+              /* [personal] chat interface over the session transcript; the raw
+                 PTY stays available via the header's fullscreen button. */
+              <div style={{ flex: 1, minWidth: 0, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
+                <AgentChatPanel agent={agent} />
+                <MessageQueueComposer agent={agent} />
+              </div>
+            ) : (
             <div style={{ flex: 1, minWidth: 0, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
               <div style={{ flex: 1, minHeight: 0, display: 'flex' }}>
                 <PtyTerminalView
@@ -197,6 +208,7 @@ export function AgentDetailPanel({ agent }: AgentDetailPanelProps) {
               </div>
               <MessageQueueComposer agent={agent} />
             </div>
+            )
             )
           ) : (
             <EmptyTab title="No PTY">

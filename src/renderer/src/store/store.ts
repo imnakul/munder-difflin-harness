@@ -281,6 +281,10 @@ interface State {
   /** [personal] Mirror of config.uiThemePreset — App stamps data-ctheme. */
   uiThemePreset: string;
   setUiThemePreset: (id: string) => void;
+  /** [personal] Mirror of config.agentChatView — gates the chat-style agent
+   *  view in AgentDetailPanel. */
+  agentChatView: boolean;
+  setAgentChatView: (on: boolean) => void;
   /** [personal] Split view: up to MAX_SPLITS agents shown side-by-side with
    *  the main panel, each pinned to an edge. Set by the main-area drop zone
    *  (App.tsx) while Split Agent Mode is on. */
@@ -815,6 +819,8 @@ export const useStore = create<State>((set) => ({
   setUiPortraits: (mode) => set({ uiPortraits: mode }),
   uiThemePreset: 'default',
   setUiThemePreset: (id) => set({ uiThemePreset: id }),
+  agentChatView: false,
+  setAgentChatView: (on) => set({ agentChatView: on }),
   splits: [],
   setSplits: (v) => set({ splits: v }),
   draggingAgentId: null,

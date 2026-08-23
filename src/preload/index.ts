@@ -337,6 +337,8 @@ export interface HarnessConfig {
   uiPortraits?: 'pixel' | 'svg';
   /** [personal] Color theme preset id; mirrors main. */
   uiThemePreset?: string;
+  /** [personal] Chat-style agent view on/off; mirrors main. */
+  agentChatView?: boolean;
   /** TV-show office themes feature flag (Settings picker + switch flow). Default OFF. */
   tvShowOffices?: boolean;
   /** Active office map/cast theme (honored only when tvShowOffices is on). */
@@ -836,6 +838,11 @@ const api = {
   /** Record one submitted prompt. Fire-and-forget from the prompt-detection hook. */
   historyAdd: (entry: { agentId: string; cwd?: string; text: string }): Promise<{ ok: boolean; error?: string }> =>
     ipcRenderer.invoke('history:add', entry),
+  /** [personal] Chat view: structured messages from the agent's live Claude
+   *  Code session transcript (newest last). Null until the agent's hooks have
+   *  fired at least once (the transcript path is learned from them). */
+  transcriptMessages: (agentId: string, limit?: number): Promise<{ role: 'user' | 'assistant'; text: string; tools?: { name: string; brief: string }[]; ts?: number }[] | null> =>
+    ipcRenderer.invoke('transcript:messages', agentId, limit),
   /** Most-recent-first history, optionally scoped to one agent. */
   historyList: (agentId?: string, limit?: number): Promise<CommandHistoryEntry[]> =>
     ipcRenderer.invoke('history:list', agentId, limit),
