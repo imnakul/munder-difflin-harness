@@ -17,6 +17,7 @@ import { useStore, type Agent } from '@/store/store';
 import { PixelButton } from './PixelButton';
 import { Icon } from './Icon';
 import { SpritePortrait } from './SpritePortrait';
+import { MarkdownPreview } from '@/markdown/MarkdownPreview'; // [personal]
 
 interface ChatToolUse { name: string; brief: string }
 interface ChatMsg {
@@ -157,17 +158,23 @@ function Bubble({ m }: { m: ChatMsg }) {
       maxWidth: '86%'
     }}>
       <div style={{
-        padding: '8px 12px',
-        background: isUser ? 'var(--cth-sky-light)' : 'var(--cth-cream-100)',
-        boxShadow: 'inset 0 0 0 1px var(--cth-ink-100)',
+        padding: isUser ? '8px 12px' : '2px 2px',
+        background: isUser ? 'var(--cth-sky-light)' : 'transparent',
+        boxShadow: isUser ? 'inset 0 0 0 1px var(--cth-ink-100)' : 'none',
         borderRadius: 12,
         borderBottomRightRadius: isUser ? 4 : 12,
         borderBottomLeftRadius: isUser ? 12 : 4,
         fontSize: 13.5, lineHeight: '20px',
         color: 'var(--cth-ink-900)',
-        whiteSpace: 'pre-wrap', wordBreak: 'break-word'
+        ...(isUser ? { whiteSpace: 'pre-wrap', wordBreak: 'break-word' } : {})
       }}>
-        {m.text}
+        {isUser
+          ? m.text
+          : /* [personal] full markdown: tables, code, lists — the app's
+             hardened MarkdownPreview (no raw HTML, safe links). */
+            <div className="cth-md-preview cth-md-chat">
+              <MarkdownPreview source={m.text} />
+            </div>}
       </div>
       {m.tools && m.tools.length > 0 && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 3, marginTop: 4, width: '100%' }}>

@@ -6,6 +6,24 @@
 /* [personal] Named color themes (opt-in; inert unless data-ctheme set + modern). */
 @import './themes.css';
 
+/* [personal] Chat view markdown — the shared .cth-md-preview styles sized for
+   message bubbles (AgentChatPanel): no page padding, compact headings/code,
+   full-bubble width. */
+.cth-md-chat { padding: 0; max-width: none; font-size: 13.5px; line-height: 1.55; }
+.cth-md-chat h1, .cth-md-chat h2, .cth-md-chat h3 { border-bottom: none; padding-bottom: 0; }
+.cth-md-chat h1 { font-size: 17px; }
+.cth-md-chat h2 { font-size: 15.5px; }
+.cth-md-chat h3 { font-size: 14px; }
+.cth-md-chat h4, .cth-md-chat h5 { font-size: 13.5px; }
+.cth-md-chat p { margin: 0.45em 0; }
+.cth-md-chat pre { padding: 8px 10px; border-radius: 8px; }
+.cth-md-chat code { font-size: 12px; border-radius: 4px; }
+.cth-md-chat th, .cth-md-chat td { font-size: 12.5px; padding: 4px 8px; }
+.cth-md-chat blockquote { margin: 0.5em 0; }
+.cth-md-chat ul, .cth-md-chat ol { margin: 0.35em 0; }
+.cth-md-chat li { margin: 2px 0; }
+.cth-md-chat hr { margin: 0.9em 0; }
+
 *, *::before, *::after { box-sizing: border-box; }
 
 /* The app is a fixed cream/light design. Without declaring it, Chromium on a
