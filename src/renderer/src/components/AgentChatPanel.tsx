@@ -79,7 +79,15 @@ export function AgentChatPanel({ agent, onShowRaw }: { agent: Agent; onShowRaw?:
         borderBottom: '1px solid var(--cth-ink-100)',
         background: 'var(--cth-cream-100)'
       }}>
-        <SpritePortrait character={agent.character} scale={1} />
+        {/* sized box: the 3D img fills 100%/100% of its container, so without
+            fixed bounds it renders at natural size (the giant-avatar bug). */}
+        <div style={{
+          width: 40, height: 40, flexShrink: 0,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          overflow: 'hidden', borderRadius: 8
+        }}>
+          <SpritePortrait character={agent.character} scale={1} />
+        </div>
         <div style={{ flex: 1, minWidth: 0 }}>
           <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--cth-ink-900)' }}>{agent.name}</span>
           <span style={{ fontSize: 12, color: 'var(--cth-ink-500)', marginLeft: 8 }}>
