@@ -411,3 +411,27 @@ export function readSessionMessages(transcriptPath: string, limit = 200): ChatMe
     return [];
   }
 }
+
+// [personal] Chat view fallback: when no hook has registered the agent's
+// transcript path yet (long-running agent predating this app launch, idle
+// session), resolve the MOST RECENTLY MODIFIED session jsonl in the agent's
+// project directory. Heuristic (two agents sharing a cwd race on newest) —
+// but only used when the exact hook-learned path is unavailable.
+export function newestTranscriptFor(cwd: string): string | null {
+  if (!cwd) return null;
+  try {
+    const dir = projectDir(cwd);
+    const files = readdirSync(dir).filter((f) => f.endsWith('.jsonl'));
+    if (files.length === 0) return null;
+    let best: string | null = null;
+    let bestMtime = -1;
+    for (const f of files) {
+      const full = path.join(dir, f);
+      const m = statSync(full).mtimeMs;
+      if (m > bestMtime) { bestMtime = m; best = full; }
+    }
+    return best;
+  } catch {
+    return null;
+  }
+}

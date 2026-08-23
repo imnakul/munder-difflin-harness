@@ -31,7 +31,7 @@ import { MemoryManager } from './memory';
 import { KnowledgeManager } from './knowledge';
 import { MemoryReflector, type ReflectSettings } from './reflect';
 import { PersistStore } from './db';
-import { readAgentUsage, readContextTokens, seedSessionTranscript, resolveSessionCwd, readSessionMessages } from './transcript';
+import { readAgentUsage, readContextTokens, seedSessionTranscript, resolveSessionCwd, readSessionMessages, newestTranscriptFor } from './transcript';
 import { listIssues, listCIRuns } from './github';
 import { SlackWebhookServer, SlackReplyServer, postSlackReply, type SlackEventFile } from './slack';
 import {
@@ -2809,7 +2809,9 @@ ipcMain.handle('pty:list', () => ptyManager.list());
 // transcript path is learned from the agent's hooks, same as agentContext).
 ipcMain.handle('transcript:messages', (_evt, agentId: unknown, limit: unknown) => {
   if (typeof agentId !== 'string') return null;
-  const tp = hookServer.transcriptPath(agentId);
+  const tp = hookServer.transcriptPath(agentId)
+    // [personal] fallback for agents whose hooks haven't fired this launch
+    ?? newestTranscriptFor(hive.registry().agents[agentId]?.cwd ?? '');
   if (!tp) return null;
   return readSessionMessages(tp, typeof limit === 'number' && limit > 0 ? Math.min(limit, 500) : 200);
 });
