@@ -28,7 +28,7 @@ interface ChatMsg {
 
 const POLL_MS = 2000;
 
-export function AgentChatPanel({ agent }: { agent: Agent }) {
+export function AgentChatPanel({ agent, onShowRaw }: { agent: Agent; onShowRaw?: () => void }) {
   const [msgs, setMsgs] = useState<ChatMsg[] | null>(null);
   const [noTranscript, setNoTranscript] = useState(false);
   const status = useStore((s) => s.agents.find((a) => a.id === agent.id)?.status ?? 'idle');
@@ -89,8 +89,8 @@ export function AgentChatPanel({ agent }: { agent: Agent }) {
         <PixelButton
           variant="secondary"
           size="sm"
-          onClick={() => setFullscreen(agent.id)}
-          title="Open the raw terminal in fullscreen"
+          onClick={() => (onShowRaw ? onShowRaw() : setFullscreen(agent.id))}
+          title={onShowRaw ? 'Switch this pane to the raw terminal' : 'Open the raw terminal in fullscreen'}
         >
           <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
             <Icon name="terminal" /> raw terminal

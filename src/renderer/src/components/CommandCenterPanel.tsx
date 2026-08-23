@@ -3,6 +3,7 @@ import { PixelPanel } from './PixelPanel';
 import { PixelBadge } from './PixelBadge';
 import { PixelButton } from './PixelButton';
 import { SpritePortrait } from './SpritePortrait';
+import { AgentChatPanel } from './AgentChatPanel'; // [personal]
 import { PtyTerminalView } from './PtyTerminalView';
 import { MessageQueueComposer } from './MessageQueueComposer';
 import { TasksKanban } from './TasksKanban';
@@ -98,6 +99,11 @@ export function CommandCenterPanel({ agent, fullscreen = false }: { agent: Agent
   // [personal] While the split panel shows THIS agent's pty, this panel hands
   // the terminal over (one pty, one live xterm).
   const splitAgentId = useStore((s) => (s.splits.some((sp) => sp.agentId === agent.id) ? agent.id : null));
+  // [personal] Chat-style view for the god's terminal tab (Settings →
+  // Appearance). forceRaw flips THIS panel back to the raw PTY (the chat's
+  // raw-terminal button); the slim bar above the terminal returns to chat.
+  const chatViewOn = useStore((s) => s.agentChatView);
+  const [forceRawTerminal, setForceRawTerminal] = useState(false);
   // The trigger-history ledger has nothing to say until an outside party can
   // reach us, so its tab appears only once an org key or a webhook exists. This
   // is the first config-gated tab in the panel: TABS stays the canonical order
@@ -316,8 +322,27 @@ export function CommandCenterPanel({ agent, fullscreen = false }: { agent: Agent
           ) : !fullscreen && splitAgentId === agent.id ? (
             // [personal] the split panel owns this pty right now
             <Centered>Terminal is open in the split view. Close the split to bring it back.</Centered>
+          ) : chatViewOn && !forceRawTerminal && agent.ptyId ? (
+            /* [personal] chat interface over the session transcript */
+            <div style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
+              <AgentChatPanel agent={agent} onShowRaw={() => setForceRawTerminal(true)} />
+              <MessageQueueComposer agent={agent} />
+            </div>
           ) : agent.ptyId ? (
             <>
+              {chatViewOn && forceRawTerminal && (
+                <div style={{
+                  display: 'flex', justifyContent: 'flex-end', padding: '4px 8px',
+                  background: 'var(--cth-cream-100)', borderBottom: '1px solid var(--cth-ink-100)',
+                  flexShrink: 0
+                }}>
+                  <PixelButton variant="secondary" size="sm" onClick={() => setForceRawTerminal(false)}>
+                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+                      <Icon name="bell" /> back to chat
+                    </span>
+                  </PixelButton>
+                </div>
+              )}
               <div style={{ flex: 1, minHeight: 0, display: 'flex' }}>
                 <PtyTerminalView
                   key={terminalInstanceKey(agent.ptyId, agent.terminalGeneration)}
