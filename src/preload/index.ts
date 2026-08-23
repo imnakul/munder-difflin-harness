@@ -841,7 +841,7 @@ const api = {
   /** [personal] Chat view: structured messages from the agent's live Claude
    *  Code session transcript (newest last). Null until the agent's hooks have
    *  fired at least once (the transcript path is learned from them). */
-  transcriptMessages: (agentId: string, limit?: number): Promise<{ role: 'user' | 'assistant'; text: string; tools?: { name: string; brief: string }[]; ts?: number }[] | null> =>
+  transcriptMessages: (agentId: string, limit?: number): Promise<{ role: 'user' | 'assistant'; text: string; tools?: { name: string; brief: string }[]; segments?: { kind: 'text'; text: string } | { kind: 'tool'; name: string; brief: string }[]; ts?: number }[] | null> =>
     ipcRenderer.invoke('transcript:messages', agentId, limit),
   /** Most-recent-first history, optionally scoped to one agent. */
   historyList: (agentId?: string, limit?: number): Promise<CommandHistoryEntry[]> =>

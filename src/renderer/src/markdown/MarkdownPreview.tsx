@@ -44,8 +44,13 @@ export const MarkdownPreview = memo(function MarkdownPreview({
 }: MarkdownPreviewProps) {
   return (
     <div className="cth-md-preview">
+      {/* [personal] math: singleDollarInlineMath is OFF on purpose — agent
+          prose is full of money ("cost $5 … saved $10") and single-$ inline
+          math turned every such pair into a garbled formula. Display math
+          ($$…$$) still renders; Claude writes inline math with $$ in
+          practice, so nothing real is lost. */}
       <ReactMarkdown
-        remarkPlugins={math ? [remarkGfm, remarkMath] : [remarkGfm]}
+        remarkPlugins={math ? [remarkGfm, [remarkMath, { singleDollarInlineMath: false }]] : [remarkGfm]}
         rehypePlugins={math ? [rehypeKatex] : []}
         components={{
           a: ({ href, children }) => {

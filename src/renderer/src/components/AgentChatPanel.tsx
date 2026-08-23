@@ -20,10 +20,14 @@ import { SpritePortrait } from './SpritePortrait';
 import { MarkdownPreview } from '@/markdown/MarkdownPreview'; // [personal]
 
 interface ChatToolUse { name: string; brief: string }
+/** [personal] ordered turn pieces — text and tool calls replayed in the order
+ *  they happened (without this, every tool chip lands at the bubble's bottom). */
+type ChatSegment = { kind: 'text'; text: string } | { kind: 'tool'; name: string; brief: string };
 interface ChatMsg {
   role: 'user' | 'assistant';
   text: string;
   tools?: ChatToolUse[];
+  segments?: ChatSegment[];
   ts?: number;
 }
 
@@ -157,43 +161,69 @@ function Bubble({ m }: { m: ChatMsg }) {
       alignItems: isUser ? 'flex-end' : 'flex-start',
       maxWidth: '86%'
     }}>
-      <div style={{
-        padding: isUser ? '8px 12px' : '2px 2px',
-        background: isUser ? 'var(--cth-sky-light)' : 'transparent',
-        boxShadow: isUser ? 'inset 0 0 0 1px var(--cth-ink-100)' : 'none',
-        borderRadius: 12,
-        borderBottomRightRadius: isUser ? 4 : 12,
-        borderBottomLeftRadius: isUser ? 12 : 4,
-        fontSize: 13.5, lineHeight: '20px',
-        color: 'var(--cth-ink-900)',
-        ...(isUser ? { whiteSpace: 'pre-wrap', wordBreak: 'break-word' } : {})
-      }}>
-        {isUser
-          ? m.text
-          : /* [personal] full markdown: tables, code, lists — the app's
-             hardened MarkdownPreview (no raw HTML, safe links). */
+      {isUser ? (
+        <div style={{
+          padding: '8px 12px',
+          background: 'var(--cth-sky-light)',
+          boxShadow: 'inset 0 0 0 1px var(--cth-ink-100)',
+          borderRadius: 12,
+          borderBottomRightRadius: 4,
+          fontSize: 13.5, lineHeight: '20px',
+          color: 'var(--cth-ink-900)',
+          whiteSpace: 'pre-wrap', wordBreak: 'break-word'
+        }}>
+          {m.text}
+        </div>
+      ) : m.segments && m.segments.length > 0 ? (
+        /* [personal] ordered render: each text piece is markdown, each tool
+           call a chip, exactly where it happened in the turn. */
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 6, width: '100%' }}>
+          {m.segments.map((seg, i) =>
+            seg.kind === 'text' ? (
+              <div key={i} className="cth-md-preview cth-md-chat" style={{ padding: '2px 2px' }}>
+                <MarkdownPreview source={seg.text} math />
+              </div>
+            ) : (
+              <ToolChip key={i} name={seg.name} brief={seg.brief} />
+            )
+          )}
+        </div>
+      ) : (
+        /* fallback for transcripts without segments (older IPC shape) */
+        <>
+          <div style={{
+            padding: '2px 2px',
+            fontSize: 13.5, lineHeight: '20px',
+            color: 'var(--cth-ink-900)'
+          }}>
             <div className="cth-md-preview cth-md-chat">
               <MarkdownPreview source={m.text} math />
-            </div>}
-      </div>
-      {m.tools && m.tools.length > 0 && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 3, marginTop: 4, width: '100%' }}>
-          {m.tools.map((t, i) => (
-            <div key={i} style={{
-              display: 'flex', alignItems: 'center', gap: 6,
-              padding: '3px 8px',
-              background: 'var(--cth-cream-200)',
-              boxShadow: 'inset 0 0 0 1px var(--cth-ink-100)',
-              borderRadius: 6,
-              fontSize: 12, color: 'var(--cth-ink-700)',
-              whiteSpace: 'nowrap', overflow: 'hidden'
-            }}>
-              <span style={{ flexShrink: 0, color: 'var(--cth-mint)', fontWeight: 600 }}>{t.name}</span>
-              {t.brief && <span style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>{t.brief}</span>}
             </div>
-          ))}
-        </div>
+          </div>
+          {m.tools && m.tools.length > 0 && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 3, marginTop: 4, width: '100%' }}>
+              {m.tools.map((t, i) => <ToolChip key={i} name={t.name} brief={t.brief} />)}
+            </div>
+          )}
+        </>
       )}
+    </div>
+  );
+}
+
+function ToolChip({ name, brief }: { name: string; brief: string }) {
+  return (
+    <div style={{
+      display: 'flex', alignItems: 'center', gap: 6,
+      padding: '3px 8px',
+      background: 'var(--cth-cream-200)',
+      boxShadow: 'inset 0 0 0 1px var(--cth-ink-100)',
+      borderRadius: 6,
+      fontSize: 12, color: 'var(--cth-ink-700)',
+      whiteSpace: 'nowrap', overflow: 'hidden'
+    }}>
+      <span style={{ flexShrink: 0, color: 'var(--cth-mint)', fontWeight: 600 }}>{name}</span>
+      {brief && <span style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>{brief}</span>}
     </div>
   );
 }

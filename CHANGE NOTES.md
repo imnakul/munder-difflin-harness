@@ -334,8 +334,12 @@ toggle applies LIVE (no restart).
   chat view (with a "back to chat" bar when you open the raw terminal);
   full markdown in bubbles via the app's hardened `MarkdownPreview`
   (tables/code/bold), opt-in `math` prop adds KaTeX (`remark-math` +
-  `rehype-katex` — MathML-based, no raw HTML); consecutive assistant records
-  are merged so one reply isn't split into fragment bubbles.
+  `rehype-katex` — MathML-based, no raw HTML) with `singleDollarInlineMath`
+  OFF (agent prose says "$5 … $10" — single-$ inline math garbled those;
+  `$$…$$` still renders); assistant turns keep their TRUE order via ordered
+  `segments` (text/tool interleaved — flattening to text+tools[] put every
+  command chip at the bottom of the bubble; segments replay
+  text→tool→text→tool exactly as the turn happened).
 - **Chat composer skin:** `chatSkin` prop (set by both chat branches) adds a
   `cth-chat-composer` class — modern.css only. The queue textarea becomes a
   rounded, obvious message box (Claude-Desktop look); all queue mechanics

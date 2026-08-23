@@ -347,10 +347,18 @@ export function readContextTokens(transcriptPath: string): number | null {
 // there. One pass, newest-last, capped; tool inputs are reduced to a short
 // human-readable brief (never dumped raw).
 export interface ChatToolUse { name: string; brief: string }
+/** One ordered piece of an assistant turn. Claude Code emits ONE assistant
+ *  record per content block (text, tool_use, text, …) — flattening a turn
+ *  into {text, tools[]} loses WHERE each tool ran, which put every command
+ *  chip at the bottom of the bubble. Segments replay the real order. */
+export type ChatSegment = { kind: 'text'; text: string } | { kind: 'tool'; name: string; brief: string };
 export interface ChatMessage {
   role: 'user' | 'assistant';
   text: string;
   tools?: ChatToolUse[];
+  /** [personal] ordered text/tool segments for assistant turns (supersedes
+   *  text+tools for rendering; those stay for count/preview compatibility). */
+  segments?: ChatSegment[];
   ts?: number;
 }
 
@@ -398,24 +406,44 @@ export function readSessionMessages(transcriptPath: string, limit = 200): ChatMe
         const blocks = Array.isArray(rec.message.content)
           ? (rec.message.content as { type?: string; text?: string; name?: string; input?: unknown }[])
           : [];
-        const text = blocks.filter((b) => b.type === 'text').map((b) => b.text ?? '').join('\n').trim();
-        const tools: ChatToolUse[] = blocks
-          .filter((b) => b.type === 'tool_use' && typeof b.name === 'string')
-          .map((b) => ({ name: b.name as string, brief: toolBrief(b.name as string, b.input) }));
-        if (!text && tools.length === 0) continue;
-        out.push({ role: 'assistant', text, tools: tools.length ? tools : undefined, ts });
+        // Walk blocks IN ORDER so segments replay the turn as it happened:
+        // text, then the tool it announced, then more text, …
+        const segments: ChatSegment[] = [];
+        for (const b of blocks) {
+          if (b.type === 'text') {
+            const t = (b.text ?? '').trim();
+            if (t) segments.push({ kind: 'text', text: t });
+          } else if (b.type === 'tool_use' && typeof b.name === 'string') {
+            segments.push({ kind: 'tool', name: b.name as string, brief: toolBrief(b.name as string, b.input) });
+          }
+        }
+        const text = segments.filter((s): s is { kind: 'text'; text: string } => s.kind === 'text')
+          .map((s) => s.text).join('\n');
+        const tools: ChatToolUse[] = segments.filter((s): s is { kind: 'tool'; name: string; brief: string } => s.kind === 'tool')
+          .map((s) => ({ name: s.name, brief: s.brief }));
+        if (segments.length === 0) continue;
+        out.push({ role: 'assistant', text, tools: tools.length ? tools : undefined, segments, ts });
       }
     }
     // Claude Code emits ONE assistant record per content block — a single
     // logical response arrives as several consecutive records. Merge them into
-    // one message (text joined with a blank line, tools unioned in order) so
-    // the chat renders one flowing response instead of gappy fragments.
+    // one message (segments concatenated in order; consecutive text segments
+    // fuse with a blank line) so the chat renders one flowing, correctly
+    // ORDERED response instead of gappy fragments.
     const merged: ChatMessage[] = [];
     for (const m of out) {
       const prev = merged[merged.length - 1];
       if (m.role === 'assistant' && prev && prev.role === 'assistant') {
         prev.text = prev.text ? prev.text + '\n\n' + m.text : m.text;
         if (m.tools) prev.tools = [...(prev.tools ?? []), ...m.tools];
+        for (const seg of m.segments ?? []) {
+          const last = prev.segments?.[prev.segments.length - 1];
+          if (seg.kind === 'text' && last?.kind === 'text') {
+            last.text = last.text + '\n\n' + seg.text;
+          } else {
+            prev.segments = [...(prev.segments ?? []), seg];
+          }
+        }
       } else {
         merged.push(m);
       }
